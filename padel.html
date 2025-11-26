@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Padel Competitie Dashboard</title>
+    <title>Padel Dashboard Pro</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -45,17 +45,26 @@
             padding: 15px;
             box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
             overflow-x: auto;
+            margin-bottom: 20px;
         }
         .table-container.pink-theme { box-shadow: 0 0 15px rgba(255, 0, 255, 0.1); }
         .table-container.pink-theme h3 { color: var(--neon-pink); }
         .table-container.blue-theme h3 { color: var(--neon-blue); }
 
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th, td { padding: 10px 5px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-        th { color: var(--text-muted); font-size: 0.8rem; }
-        tbody tr:nth-child(1) td:first-child { color: var(--accent-gold); text-shadow: 0 0 5px var(--accent-gold); font-weight: bold; } 
-        tbody tr:nth-child(2) td:first-child { color: #C0C0C0; font-weight: bold; }
-        tbody tr:nth-child(3) td:first-child { color: #CD7F32; font-weight: bold; }
+        th, td { padding: 12px 8px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); vertical-align: middle; }
+        th { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
+        
+        /* Podium colors for Individual/Duo tables */
+        .rank-table tbody tr:nth-child(1) td:first-child { color: var(--accent-gold); text-shadow: 0 0 5px var(--accent-gold); font-weight: bold; } 
+        .rank-table tbody tr:nth-child(2) td:first-child { color: #C0C0C0; font-weight: bold; }
+        .rank-table tbody tr:nth-child(3) td:first-child { color: #CD7F32; font-weight: bold; }
+
+        /* H2H Table specifics */
+        .h2h-vs { font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 2px; }
+        .h2h-score { font-weight: bold; font-size: 1.1rem; }
+        .team-blue { color: var(--neon-blue); }
+        .team-pink { color: var(--neon-pink); }
 
         /* FUN STATS CARDS */
         .fun-card {
@@ -68,34 +77,35 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            min-height: 140px;
         }
-        .fun-icon { font-size: 2rem; margin-bottom: 10px; }
-        .fun-title { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 5px; }
-        .fun-value { font-size: 1.1rem; font-weight: bold; color: var(--text-main); }
-        .fun-sub { font-size: 0.8rem; color: var(--neon-blue); margin-top: 5px; }
+        .fun-icon { font-size: 2rem; margin-bottom: 5px; }
+        .fun-title { color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .fun-value { font-size: 1.2rem; font-weight: bold; color: var(--text-main); line-height: 1.2; }
+        .fun-sub { font-size: 0.8rem; color: var(--neon-blue); margin-top: 5px; white-space: pre-wrap; }
 
         /* MATCH LIST */
         .match-list { margin-top: 20px; }
         .match-card {
             background: var(--card-bg);
             margin-bottom: 10px;
-            padding: 10px;
+            padding: 12px;
             border-radius: 5px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-left: 3px solid var(--neon-pink);
         }
-        .score-display { font-weight: bold; font-size: 1.2rem; min-width: 60px; text-align: center; }
-        .day-badge { font-size: 0.8rem; color: var(--text-muted); margin-right: 10px; }
+        .score-display { font-weight: bold; font-size: 1.2rem; min-width: 70px; text-align: center; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 5px; margin: 0 10px; }
+        .day-badge { font-size: 0.75rem; color: var(--bg-color); background: var(--text-muted); padding: 2px 6px; border-radius: 4px; margin-right: 10px; font-weight: bold;}
         
         .loading { text-align: center; padding: 20px; color: var(--neon-blue); font-style: italic; }
         .refresh-btn {
-            display: block; margin: 20px auto; background: transparent; border: 1px solid var(--neon-blue);
+            display: block; margin: 30px auto; background: transparent; border: 1px solid var(--neon-blue);
             color: var(--neon-blue); padding: 10px 20px; cursor: pointer; border-radius: 20px;
-            text-transform: uppercase; font-weight: bold;
+            text-transform: uppercase; font-weight: bold; transition: 0.3s;
         }
-        .refresh-btn:hover { background: var(--neon-blue); color: black; }
+        .refresh-btn:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 15px var(--neon-blue); }
 
     </style>
 </head>
@@ -119,7 +129,7 @@
                 <div class="fun-icon">💥</div>
                 <div class="fun-title">Monsterzege</div>
                 <div class="fun-value" id="big-win-score">-</div>
-                <div class="fun-sub" id="big-win-team">-</div>
+                <div class="fun-sub" id="big-win-teams">-</div>
             </div>
             <div class="fun-card" style="border-bottom: 3px solid #ff00ff;">
                 <div class="fun-icon">😅</div>
@@ -138,7 +148,7 @@
         <div class="stats-grid">
             <div class="table-container blue-theme">
                 <h3>Individueel</h3>
-                <table>
+                <table class="rank-table">
                     <thead><tr><th>#</th><th>Speler</th><th>Ptn</th><th>W</th><th>L</th><th>Saldo</th></tr></thead>
                     <tbody id="individual-body"></tbody>
                 </table>
@@ -146,11 +156,26 @@
 
             <div class="table-container pink-theme">
                 <h3>Duo's</h3>
-                <table>
+                <table class="rank-table">
                     <thead><tr><th>#</th><th>Team</th><th>Ptn</th><th>W</th><th>L</th><th>Saldo</th></tr></thead>
                     <tbody id="duo-body"></tbody>
                 </table>
             </div>
+        </div>
+
+        <div class="table-container">
+            <h3 style="color: var(--accent-gold); text-align: center;">Head-to-Head (Onderlinge Duel)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align:right; width: 40%">Team 1</th>
+                        <th style="width: 20%">Stand (Winst)</th>
+                        <th style="text-align:left; width: 40%">Team 2</th>
+                    </tr>
+                </thead>
+                <tbody id="h2h-body">
+                    </tbody>
+            </table>
         </div>
         
         <h2>Laatste Wedstrijden</h2>
@@ -176,18 +201,20 @@
     function processCSV(csvText) {
         const rows = csvText.split('\n').slice(1);
         
+        // --- INIT STATS ---
         let pStats = {};
         const playerNames = ["Jorden", "Yarni", "Lars", "Vince"];
         playerNames.forEach(p => pStats[p] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0, bagels: 0, currentStreak: 0, maxStreak: 0 });
         let dStats = {};
-        
-        let matches = []; // For storing parsed matches
+        let h2hStats = {}; // To store A vs B records
+
+        let matches = []; 
         let historyContainer = document.getElementById('match-history');
         historyContainer.innerHTML = '';
 
-        // STATS VARIABLES
-        let biggestWin = { diff: -1, text: '', score: '' };
-        let closestMatch = { diff: 100, text: '', score: '' };
+        // Fun Stats placeholders
+        let biggestWin = { diff: -1, teams: '', score: '' };
+        let closestMatch = { diff: 100, teams: '', score: '' };
 
         rows.forEach(row => {
             const cols = row.split(',');
@@ -207,7 +234,38 @@
 
             matches.push({ day, t1Name, t2Name, s1, s2 });
 
-            // --- CALCULATIONS ---
+            // --- H2H LOGIC ---
+            // Create a unique key for the matchup regardless of order (e.g., "Team A vs Team B")
+            // Because our teams are consistent, we can just use the names sorted, but let's stick to the sheet order logic for display
+            // We want to group "Jorden & Yarni vs Lars & Vince" same as "Lars & Vince vs Jorden & Yarni"
+            
+            // Simple way: Sort the two team names alphabetically to make a key
+            let pairingKey = [t1Name, t2Name].sort().join("|||"); 
+            if (!h2hStats[pairingKey]) {
+                h2hStats[pairingKey] = { t1: t1Name, t2: t2Name, t1Wins: 0, t2Wins: 0, t1Legs: 0, t2Legs: 0 };
+                // If the sorted key flipped the names, we adjust the reference names in the object
+                if (pairingKey.startsWith(t2Name)) {
+                     h2hStats[pairingKey].t1 = t2Name;
+                     h2hStats[pairingKey].t2 = t1Name;
+                }
+            }
+            
+            // Update H2H Stats
+            let currentMatchup = h2hStats[pairingKey];
+            if (t1Name === currentMatchup.t1) {
+                currentMatchup.t1Legs += s1;
+                currentMatchup.t2Legs += s2;
+                if (s1 > s2) currentMatchup.t1Wins++;
+                if (s2 > s1) currentMatchup.t2Wins++;
+            } else {
+                // Names were flipped in this specific row compared to our key
+                currentMatchup.t1Legs += s2;
+                currentMatchup.t2Legs += s1;
+                if (s2 > s1) currentMatchup.t1Wins++;
+                if (s1 > s2) currentMatchup.t2Wins++;
+            }
+
+            // --- STANDARD STATS ---
             const t1Players = t1Name.split(' & ');
             const t2Players = t2Name.split(' & ');
 
@@ -221,88 +279,103 @@
             let diff = Math.abs(s1 - s2);
             let winners = [];
             let losers = [];
-
+            let matchText = `${t1Name} vs ${t2Name}`;
+            
+            // Win Logic
             if (s1 > s2) {
-                // Team 1 wint
                 dStats[t1Name].w++; dStats[t1Name].pts += diff; dStats[t2Name].l++;
                 winners = t1Players; losers = t2Players;
                 
-                // Fun Stats: Biggest Win
                 if (diff > biggestWin.diff) {
-                    biggestWin = { diff: diff, text: t1Name, score: `${s1}-${s2}` };
+                    biggestWin = { diff: diff, teams: matchText, score: `${s1}-${s2}` };
                 }
-                // Fun Stats: Bagel (6-0 check)
                 if (s2 === 0) t1Players.forEach(p => { if(pStats[p]) pStats[p].bagels++; });
 
             } else if (s2 > s1) {
-                // Team 2 wint
                 dStats[t2Name].w++; dStats[t2Name].pts += diff; dStats[t1Name].l++;
                 winners = t2Players; losers = t1Players;
 
                 if (diff > biggestWin.diff) {
-                    biggestWin = { diff: diff, text: t2Name, score: `${s2}-${s1}` };
+                    biggestWin = { diff: diff, teams: matchText, score: `${s2}-${s1}` };
                 }
                 if (s1 === 0) t2Players.forEach(p => { if(pStats[p]) pStats[p].bagels++; });
             }
 
-            // Closest Match Logic
             if (diff > 0 && diff < closestMatch.diff) {
-                closestMatch = { diff: diff, text: `${t1Name} vs ${t2Name}`, score: `${s1}-${s2}` };
+                closestMatch = { diff: diff, teams: matchText, score: `${s1}-${s2}` };
             }
 
-            // Update Individual Points & Streaks
             winners.forEach(p => {
                 if(pStats[p]) {
-                    pStats[p].w++;
-                    pStats[p].pts += diff;
+                    pStats[p].w++; pStats[p].pts += diff;
                     pStats[p].currentStreak++;
                     if (pStats[p].currentStreak > pStats[p].maxStreak) pStats[p].maxStreak = pStats[p].currentStreak;
                 }
             });
-            losers.forEach(p => {
-                if(pStats[p]) {
-                    pStats[p].l++;
-                    pStats[p].currentStreak = 0; // Reset streak on loss
-                }
-            });
+            losers.forEach(p => { if(pStats[p]) { pStats[p].l++; pStats[p].currentStreak = 0; } });
         });
 
         // --- RENDER FUN STATS ---
-        
-        // 1. Longest Streak
         let streakKing = playerNames.reduce((prev, curr) => pStats[curr].maxStreak > pStats[prev].maxStreak ? curr : prev, playerNames[0]);
         document.getElementById('streak-player').innerText = streakKing;
         document.getElementById('streak-count').innerText = `${pStats[streakKing].maxStreak} zeges op rij`;
 
-        // 2. Biggest Win
         if(biggestWin.diff > -1) {
             document.getElementById('big-win-score').innerText = biggestWin.score;
-            document.getElementById('big-win-team').innerText = biggestWin.text;
+            document.getElementById('big-win-teams').innerHTML = biggestWin.teams.replace(" vs ", "<br>vs<br>");
         }
 
-        // 3. Closest Match
         if(closestMatch.diff < 100) {
             document.getElementById('close-match-score').innerText = closestMatch.score;
-            document.getElementById('close-match-teams').innerText = "Spannendste match";
+            document.getElementById('close-match-teams').innerHTML = closestMatch.teams.replace(" vs ", "<br>vs<br>");
         }
 
-        // 4. Bagel King
         let bagelKing = playerNames.reduce((prev, curr) => pStats[curr].bagels > pStats[prev].bagels ? curr : prev, playerNames[0]);
         document.getElementById('bagel-player').innerText = bagelKing;
         document.getElementById('bagel-count').innerText = `${pStats[bagelKing].bagels}x 6-0 gewonnen`;
 
+        // --- RENDER H2H TABLE ---
+        const h2hBody = document.getElementById('h2h-body');
+        h2hBody.innerHTML = Object.values(h2hStats).map(h => {
+            // Calculate leg diff string
+            const t1Diff = h.t1Legs - h.t2Legs;
+            const t2Diff = h.t2Legs - h.t1Legs;
+            const legsText1 = t1Diff > 0 ? `+${t1Diff}` : t1Diff;
+            const legsText2 = t2Diff > 0 ? `+${t2Diff}` : t2Diff;
 
-        // --- RENDER HISTORY ---
+            return `
+            <tr>
+                <td style="text-align:right;">
+                    <span class="team-blue">${h.t1}</span>
+                    <span class="h2h-vs">Legs: ${h.t1Legs} (${legsText1})</span>
+                </td>
+                <td>
+                    <span class="h2h-score">${h.t1Wins} - ${h.t2Wins}</span>
+                </td>
+                <td style="text-align:left;">
+                    <span class="team-pink">${h.t2}</span>
+                    <span class="h2h-vs">Legs: ${h.t2Legs} (${legsText2})</span>
+                </td>
+            </tr>
+            `;
+        }).join('');
+
+
+        // --- RENDER MATCH HISTORY ---
         matches.reverse().slice(0, 10).forEach(m => {
             const div = document.createElement('div');
             div.className = 'match-card';
             div.innerHTML = `
                 <div style="display:flex; align-items:center;">
                     <span class="day-badge">Dag ${m.day}</span>
-                    <span style="color:var(--neon-blue)">${m.t1Name}</span>
+                    <div style="display:flex; flex-direction:column;">
+                         <span style="color:var(--neon-blue); font-size:0.9rem;">${m.t1Name}</span>
+                    </div>
                 </div>
                 <span class="score-display">${m.s1} - ${m.s2}</span>
-                <span style="color:var(--neon-pink)">${m.t2Name}</span>
+                <div style="text-align:right;">
+                     <span style="color:var(--neon-pink); font-size:0.9rem;">${m.t2Name}</span>
+                </div>
             `;
             historyContainer.appendChild(div);
         });
