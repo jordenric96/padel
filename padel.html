@@ -17,6 +17,7 @@
             --accent-gold: #ffd700;
             --accent-silver: #e0e0e0;
             --accent-bronze: #cd7f32;
+            --accent-pear: #c0ff00; /* Peer kleur */
         }
 
         body {
@@ -36,14 +37,12 @@
         
         /* LAYOUT GRIDS */
         .stats-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 30px; }
-        .hall-of-fame-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 30px; }
-        
-        @media (min-width: 700px) { 
-            .hall-of-fame-grid { grid-template-columns: 1fr 1fr; }
-        }
-        @media (min-width: 1000px) { 
-            .stats-grid { grid-template-columns: 1fr 1fr; } 
-            .hall-of-fame-grid { grid-template-columns: 1fr 1fr 1fr 1fr; }
+        /* Auto-fit voor flexibele kaarten (nu we er 5 hebben) */
+        .hall-of-fame-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 30px; 
         }
 
         /* TABLES & CARDS */
@@ -140,13 +139,19 @@
             <canvas id="pointsChart"></canvas>
         </div>
 
-        <h3 style="margin-bottom: 15px; color: var(--accent-gold);">Hall of Fame (Top 4)</h3>
+        <h3 style="margin-bottom: 15px; color: var(--accent-gold);">Hall of Fame</h3>
         <div class="hall-of-fame-grid">
             
             <div class="hof-card">
                 <h4>🔥 Onstopbaar</h4>
                 <div style="text-align:center; font-size:0.7rem; color:#aaa; margin-bottom:5px;">Meeste zeges op rij</div>
                 <ul class="hof-list" id="list-streaks"></ul>
+            </div>
+
+            <div class="hof-card" style="border-bottom: 3px solid var(--accent-pear);">
+                <h4>🍐 Den dubbele Gerard</h4>
+                <div style="text-align:center; font-size:0.7rem; color:#aaa; margin-bottom:5px;">Langste verlies streak</div>
+                <ul class="hof-list" id="list-loss-streaks"></ul>
             </div>
 
             <div class="hof-card">
@@ -227,7 +232,10 @@
         // --- INIT STATS ---
         let pStats = {};
         const playerNames = ["Jorden", "Yarni", "Lars", "Vince"];
-        playerNames.forEach(p => pStats[p] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0, bagels: 0, currentStreak: 0 });
+        playerNames.forEach(p => pStats[p] = { 
+            pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0, bagels: 0, 
+            currentStreak: 0, currentLossStreak: 0 
+        });
         let dStats = {};
         let h2hStats = {}; 
 
@@ -236,8 +244,9 @@
         historyContainer.innerHTML = '';
 
         // Fun Stats Arrays (to sort later)
-        let allStreaks = []; // { name: 'Jorden', count: 5, dateInfo: '...' }
-        let allMatchesDetailed = []; // { diff: 4, names: 'A vs B', score: '6-2' }
+        let allStreaks = []; 
+        let allLossStreaks = []; // Voor de dubbele gerard
+        let allMatchesDetailed = []; 
 
         // Chart Data
         let pointsOverTime = { "Jorden": [0], "Yarni": [0], "Lars": [0], "Vince": [0] };
@@ -260,10 +269,8 @@
             if (day !== currentDay) {
                 currentDay = day;
                 daysLabels.push("Dag " + day);
-                // Copy previous points to new day slot
                 playerNames.forEach(p => pointsOverTime[p].push(pointsOverTime[p][pointsOverTime[p].length-1]));
             }
-            // Index of current day in chart array
             const chartIdx = pointsOverTime["Jorden"].length - 1;
 
             // Init Duo
@@ -278,7 +285,6 @@
                 h2hStats[pairingKey] = { t1: t1Name, t2: t2Name, t1Wins: 0, t2Wins: 0, t1Legs: 0, t2Legs: 0 };
                 if (pairingKey.startsWith(t2Name)) { h2hStats[pairingKey].t1 = t2Name; h2hStats[pairingKey].t2 = t1Name; }
             }
-            
             let currentMatchup = h2hStats[pairingKey];
             let diff = Math.abs(s1 - s2);
 
@@ -293,7 +299,7 @@
             t1Players.forEach(p => { pStats[p].legsFor += s1; pStats[p].legsAg += s2; });
             t2Players.forEach(p => { pStats[p].legsFor += s2; pStats[p].legsAg += s1; });
 
-            // H2H legs (simple add, direction handled by key check)
+            // H2H legs
             if (t1Name === currentMatchup.t1) {
                 currentMatchup.t1Legs += s1; currentMatchup.t2Legs += s2;
             } else {
@@ -302,42 +308,47 @@
 
             // Win/Loss & Streaks
             let winners = []; let losers = [];
-            let matchText = ""; // e.g. "J&Y vs L&V"
+            let matchText = ""; 
 
             if (s1 > s2) {
-                // T1 Wins
                 dStats[t1Name].w++; dStats[t1Name].pts += diff; dStats[t2Name].l++;
                 winners = t1Players; losers = t2Players;
                 matchText = `${t1Name} vs ${t2Name}`;
                 if (t1Name === currentMatchup.t1) currentMatchup.t1Wins++; else currentMatchup.t2Wins++;
                 if (s2 === 0) winners.forEach(p => pStats[p].bagels++);
             } else {
-                // T2 Wins
                 dStats[t2Name].w++; dStats[t2Name].pts += diff; dStats[t1Name].l++;
                 winners = t2Players; losers = t1Players;
-                matchText = `${t2Name} vs ${t1Name}`; // Winner first
+                matchText = `${t2Name} vs ${t1Name}`; 
                 if (t1Name === currentMatchup.t1) currentMatchup.t2Wins++; else currentMatchup.t1Wins++;
                 if (s1 === 0) winners.forEach(p => pStats[p].bagels++);
             }
 
-            // Add to Detailed Matches (for Biggest Win / Thriller)
             allMatchesDetailed.push({
                 diff: diff,
-                text: matchText.replace(' & ', '&').replace(' & ', '&'), // shorten names slightly
+                text: matchText.replace(' & ', '&').replace(' & ', '&'), 
                 score: (s1 > s2) ? `${s1}-${s2}` : `${s2}-${s1}`
             });
 
-            // Update Points for Chart
             winners.forEach(p => pointsOverTime[p][chartIdx] += diff);
             
-            // Streak Logic
+            // Winning Streaks Logic
             winners.forEach(p => {
                 pStats[p].w++; pStats[p].pts += diff;
                 pStats[p].currentStreak++;
+                
+                // Als de winnaar een verlies-streak had, slaan we die op en resetten we
+                if (pStats[p].currentLossStreak > 1) {
+                    allLossStreaks.push({ name: p, count: pStats[p].currentLossStreak });
+                }
+                pStats[p].currentLossStreak = 0;
             });
+
+            // Losing Streaks Logic
             losers.forEach(p => {
                 pStats[p].l++;
-                // If streak ends, push to history if meaningful (>1)
+                pStats[p].currentLossStreak++; // Peer +1
+
                 if (pStats[p].currentStreak > 1) {
                     allStreaks.push({ name: p, count: pStats[p].currentStreak });
                 }
@@ -350,10 +361,13 @@
             if (pStats[p].currentStreak > 1) {
                 allStreaks.push({ name: p, count: pStats[p].currentStreak });
             }
+            if (pStats[p].currentLossStreak > 1) {
+                allLossStreaks.push({ name: p, count: pStats[p].currentLossStreak });
+            }
         });
 
         // --- RENDER EVERYTHING ---
-        renderFunStats(allStreaks, allMatchesDetailed, pStats, playerNames);
+        renderFunStats(allStreaks, allLossStreaks, allMatchesDetailed, pStats, playerNames);
         renderTables(pStats, dStats);
         renderH2H(h2hStats);
         renderChart(daysLabels, pointsOverTime);
@@ -381,26 +395,32 @@
         document.getElementById('dashboard').style.display = 'block';
     }
 
-    function renderFunStats(allStreaks, allMatches, pStats, playerNames) {
-        // 1. Streaks: Sort Descending
+    function renderFunStats(allStreaks, allLossStreaks, allMatches, pStats, playerNames) {
+        // 1. Wins
         allStreaks.sort((a,b) => b.count - a.count);
         fillList('list-streaks', allStreaks.slice(0, 4), item => 
             `<span class="hof-name">${item.name}</span> <span class="hof-val">${item.count}</span>`
         );
 
-        // 2. Biggest Wins: Sort Diff Descending
+        // 2. Den dubbele Gerard (Losses) - Filter op minstens 2 verlies
+        allLossStreaks.sort((a,b) => b.count - a.count);
+        fillList('list-loss-streaks', allLossStreaks.slice(0, 4), item => 
+            `<span class="hof-name">${item.name}</span> <span class="hof-val">${item.count}</span>`
+        );
+
+        // 3. Biggest Win
         allMatches.sort((a,b) => b.diff - a.diff);
         fillList('list-bigwins', allMatches.slice(0, 4), item => 
             `<span class="hof-name" style="font-size:0.8rem">${item.text}</span> <span class="hof-val">${item.score}</span>`
         );
 
-        // 3. Thrillers: Sort Diff Ascending (but diff > 0)
+        // 4. Thrillers
         let thrillers = allMatches.filter(m => m.diff > 0).sort((a,b) => a.diff - b.diff);
         fillList('list-thrillers', thrillers.slice(0, 4), item => 
             `<span class="hof-name" style="font-size:0.8rem">${item.text}</span> <span class="hof-val">${item.score}</span>`
         );
 
-        // 4. Bagels: Sort by bagel count
+        // 5. Bagels
         let bagelsList = playerNames.map(p => ({ name: p, count: pStats[p].bagels }))
                                     .filter(x => x.count > 0)
                                     .sort((a,b) => b.count - a.count);
@@ -477,15 +497,12 @@
 
     function renderChart(labels, dataObj) {
         const ctx = document.getElementById('pointsChart').getContext('2d');
-        
-        // Colors for the 4 players
         const colors = {
             "Jorden": "#00ffff", // Neon Blue
             "Yarni": "#ff00ff", // Neon Pink
             "Lars": "#ffd700",  // Gold
             "Vince": "#00ff9d"  // Green
         };
-
         new Chart(ctx, {
             type: 'line',
             data: {
