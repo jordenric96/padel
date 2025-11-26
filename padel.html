@@ -52,8 +52,8 @@
         .table-container.blue-theme h3 { color: var(--neon-blue); }
 
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th, td { padding: 12px 8px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); vertical-align: middle; }
-        th { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
+        th, td { padding: 12px 6px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); vertical-align: middle; }
+        th { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
         
         /* Podium colors for Individual/Duo tables */
         .rank-table tbody tr:nth-child(1) td:first-child { color: var(--accent-gold); text-shadow: 0 0 5px var(--accent-gold); font-weight: bold; } 
@@ -149,7 +149,7 @@
             <div class="table-container blue-theme">
                 <h3>Individueel</h3>
                 <table class="rank-table">
-                    <thead><tr><th>#</th><th>Speler</th><th>Ptn</th><th>W</th><th>L</th><th>Saldo</th></tr></thead>
+                    <thead><tr><th>#</th><th>Speler</th><th>Ptn</th><th>W</th><th>L</th><th>L+</th><th>L-</th><th>Saldo</th></tr></thead>
                     <tbody id="individual-body"></tbody>
                 </table>
             </div>
@@ -157,7 +157,7 @@
             <div class="table-container pink-theme">
                 <h3>Duo's</h3>
                 <table class="rank-table">
-                    <thead><tr><th>#</th><th>Team</th><th>Ptn</th><th>W</th><th>L</th><th>Saldo</th></tr></thead>
+                    <thead><tr><th>#</th><th>Team</th><th>Ptn</th><th>W</th><th>L</th><th>L+</th><th>L-</th><th>Saldo</th></tr></thead>
                     <tbody id="duo-body"></tbody>
                 </table>
             </div>
@@ -206,13 +206,12 @@
         const playerNames = ["Jorden", "Yarni", "Lars", "Vince"];
         playerNames.forEach(p => pStats[p] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0, bagels: 0, currentStreak: 0, maxStreak: 0 });
         let dStats = {};
-        let h2hStats = {}; // To store A vs B records
+        let h2hStats = {}; 
 
         let matches = []; 
         let historyContainer = document.getElementById('match-history');
         historyContainer.innerHTML = '';
 
-        // Fun Stats placeholders
         let biggestWin = { diff: -1, teams: '', score: '' };
         let closestMatch = { diff: 100, teams: '', score: '' };
 
@@ -235,22 +234,15 @@
             matches.push({ day, t1Name, t2Name, s1, s2 });
 
             // --- H2H LOGIC ---
-            // Create a unique key for the matchup regardless of order (e.g., "Team A vs Team B")
-            // Because our teams are consistent, we can just use the names sorted, but let's stick to the sheet order logic for display
-            // We want to group "Jorden & Yarni vs Lars & Vince" same as "Lars & Vince vs Jorden & Yarni"
-            
-            // Simple way: Sort the two team names alphabetically to make a key
             let pairingKey = [t1Name, t2Name].sort().join("|||"); 
             if (!h2hStats[pairingKey]) {
                 h2hStats[pairingKey] = { t1: t1Name, t2: t2Name, t1Wins: 0, t2Wins: 0, t1Legs: 0, t2Legs: 0 };
-                // If the sorted key flipped the names, we adjust the reference names in the object
                 if (pairingKey.startsWith(t2Name)) {
                      h2hStats[pairingKey].t1 = t2Name;
                      h2hStats[pairingKey].t2 = t1Name;
                 }
             }
             
-            // Update H2H Stats
             let currentMatchup = h2hStats[pairingKey];
             if (t1Name === currentMatchup.t1) {
                 currentMatchup.t1Legs += s1;
@@ -258,7 +250,6 @@
                 if (s1 > s2) currentMatchup.t1Wins++;
                 if (s2 > s1) currentMatchup.t2Wins++;
             } else {
-                // Names were flipped in this specific row compared to our key
                 currentMatchup.t1Legs += s2;
                 currentMatchup.t2Legs += s1;
                 if (s2 > s1) currentMatchup.t1Wins++;
@@ -269,7 +260,7 @@
             const t1Players = t1Name.split(' & ');
             const t2Players = t2Name.split(' & ');
 
-            // Legs
+            // Legs update
             dStats[t1Name].legsFor += s1; dStats[t1Name].legsAg += s2;
             dStats[t2Name].legsFor += s2; dStats[t2Name].legsAg += s1;
             
@@ -337,7 +328,6 @@
         // --- RENDER H2H TABLE ---
         const h2hBody = document.getElementById('h2h-body');
         h2hBody.innerHTML = Object.values(h2hStats).map(h => {
-            // Calculate leg diff string
             const t1Diff = h.t1Legs - h.t2Legs;
             const t2Diff = h.t2Legs - h.t1Legs;
             const legsText1 = t1Diff > 0 ? `+${t1Diff}` : t1Diff;
@@ -359,7 +349,6 @@
             </tr>
             `;
         }).join('');
-
 
         // --- RENDER MATCH HISTORY ---
         matches.reverse().slice(0, 10).forEach(m => {
@@ -392,7 +381,16 @@
             return (pStats[b].legsFor - pStats[b].legsAg) - (pStats[a].legsFor - pStats[a].legsAg);
         });
         document.getElementById('individual-body').innerHTML = sortedPlayers.map((p, i) => `
-            <tr><td>${i+1}</td><td>${p}</td><td style="color:var(--neon-blue);font-weight:bold">${pStats[p].pts}</td><td>${pStats[p].w}</td><td>${pStats[p].l}</td><td>${pStats[p].legsFor - pStats[p].legsAg}</td></tr>
+            <tr>
+                <td>${i+1}</td>
+                <td>${p}</td>
+                <td style="color:var(--neon-blue);font-weight:bold">${pStats[p].pts}</td>
+                <td>${pStats[p].w}</td>
+                <td>${pStats[p].l}</td>
+                <td>${pStats[p].legsFor}</td>
+                <td>${pStats[p].legsAg}</td>
+                <td>${pStats[p].legsFor - pStats[p].legsAg}</td>
+            </tr>
         `).join('');
 
         // Duo
@@ -401,7 +399,16 @@
              return (dStats[b].legsFor - dStats[b].legsAg) - (dStats[a].legsFor - dStats[a].legsAg);
         });
         document.getElementById('duo-body').innerHTML = sortedDuos.map((d, i) => `
-            <tr><td>${i+1}</td><td>${d}</td><td style="color:var(--neon-pink);font-weight:bold">${dStats[d].pts}</td><td>${dStats[d].w}</td><td>${dStats[d].l}</td><td>${dStats[d].legsFor - dStats[d].legsAg}</td></tr>
+            <tr>
+                <td>${i+1}</td>
+                <td>${d}</td>
+                <td style="color:var(--neon-pink);font-weight:bold">${dStats[d].pts}</td>
+                <td>${dStats[d].w}</td>
+                <td>${dStats[d].l}</td>
+                <td>${dStats[d].legsFor}</td>
+                <td>${dStats[d].legsAg}</td>
+                <td>${dStats[d].legsFor - dStats[d].legsAg}</td>
+            </tr>
         `).join('');
     }
 
