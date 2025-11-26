@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padel Competitie Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --neon-blue: #00ffff;
+            --neon-pink: #ff00ff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1, h2, h3 { text-transform: uppercase; text-align: center; letter-spacing: 2px; }
+        h1 { font-size: 2rem; text-shadow: 2px 2px 0px var(--neon-pink), -2px -2px 0px var(--neon-blue); }
+        h2 { border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px; color: var(--neon-blue); font-size: 1.2rem; }
+        
+        .container { max-width: 1200px; margin: 0 auto; }
+        .stats-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 900px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+            overflow-x: auto;
+        }
+        .table-container.pink-theme { box-shadow: 0 0 15px rgba(255, 0, 255, 0.1); }
+        .table-container.pink-theme h3 { color: var(--neon-pink); }
+        .table-container.blue-theme h3 { color: var(--neon-blue); }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th, td { padding: 10px 5px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        th { color: var(--text-muted); font-size: 0.8rem; }
+        tbody tr:nth-child(1) td:first-child { color: #FFD700; text-shadow: 0 0 5px #FFD700; font-weight: bold; } 
+        tbody tr:nth-child(2) td:first-child { color: #C0C0C0; font-weight: bold; }
+        tbody tr:nth-child(3) td:first-child { color: #CD7F32; font-weight: bold; }
+
+        .loading { text-align: center; padding: 20px; color: var(--neon-blue); font-style: italic; }
+        
+        .refresh-btn {
+            display: block;
+            margin: 20px auto;
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 20px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .refresh-btn:hover { background: var(--neon-blue); color: black; }
+
+        .match-list { margin-top: 20px; }
+        .match-card {
+            background: var(--card-bg);
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid var(--neon-pink);
+        }
+        .score-display { font-weight: bold; font-size: 1.2rem; min-width: 60px; text-align: center; }
+        .day-badge { font-size: 0.8rem; color: var(--text-muted); margin-right: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Padel Competitie</h1>
+    
+    <div id="loading" class="loading">Data ophalen uit Google Sheets...</div>
+
+    <div id="dashboard" style="display:none;">
+        <div class="stats-grid">
+            <div class="table-container blue-theme">
+                <h3>Individuele Rangschikking</h3>
+                <table>
+                    <thead><tr><th>#</th><th>Speler</th><th>Ptn</th><th>W</th><th>L</th><th>Saldo</th></tr></thead>
+                    <tbody id="individual-body"></tbody>
+                </table>
+            </div>
+
+            <div class="table-container pink-theme">
+                <h3>Duo Rangschikking</h3>
+                <table>
+                    <thead><tr><th>#</th><th>Team</th><th>Ptn</th><th>W</th><th>L</th><th>Saldo</th></tr></thead>
+                    <tbody id="duo-body"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <h2>Recent Gespeeld</h2>
+        <div id="match-history" class="match-list"></div>
+    </div>
+    
+    <button class="refresh-btn" onclick="location.reload()">Stand Vernieuwen</button>
+</div>
+
+<script>
+    // DEZE LINK IS NU AUTOMATISCH INGEVULD:
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOWlUbVIA7AVW_vM2uN9DU86vEPKm_2GatKYh_50s0wXnY_K9rETMBddyn6vdWgcYzK6WNJ4Xp1TUi/pub?output=csv";
+
+    async function fetchData() {
+        try {
+            const response = await fetch(SHEET_URL);
+            const data = await response.text();
+            processCSV(data);
+        } catch (error) {
+            document.getElementById('loading').innerHTML = "Fout bij laden. Check je internetverbinding.";
+            console.error(error);
+        }
+    }
+
+    function processCSV(csvText) {
+        const rows = csvText.split('\n').slice(1); // Skip headers
+        
+        let pStats = {};
+        ["Jorden", "Yarni", "Lars", "Vince"].forEach(p => pStats[p] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0 });
+        let dStats = {};
+
+        const historyContainer = document.getElementById('match-history');
+        historyContainer.innerHTML = '';
+
+        let playedMatches = [];
+
+        rows.forEach(row => {
+            const cols = row.split(',');
+            // We verwachten 6 kolommen: Speeldag, Wedstrijd, Team1, Team2, Score1, Score2
+            if (cols.length < 6) return;
+
+            const day = cols[0].trim();
+            const t1Name = cols[2].trim();
+            const t2Name = cols[3].trim();
+            const s1 = parseInt(cols[4]);
+            const s2 = parseInt(cols[5]);
+
+            // Als scores leeg of ongeldig zijn, slaan we deze regel over
+            if (isNaN(s1) || isNaN(s2)) return;
+
+            // Init Duo Stats (als ze nog niet bestaan)
+            if (!dStats[t1Name]) dStats[t1Name] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0 };
+            if (!dStats[t2Name]) dStats[t2Name] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0 };
+
+            updateStats(t1Name, t2Name, s1, s2, pStats, dStats);
+
+            playedMatches.push({ day, t1Name, t2Name, s1, s2 });
+        });
+
+        // Toon laatste 10 wedstrijden in historie (nieuwste bovenaan)
+        playedMatches.reverse().slice(0, 10).forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'match-card';
+            div.innerHTML = `
+                <div style="display:flex; align-items:center;">
+                    <span class="day-badge">Dag ${m.day}</span>
+                    <span style="color:var(--neon-blue)">${m.t1Name}</span>
+                </div>
+                <span class="score-display">${m.s1} - ${m.s2}</span>
+                <span style="color:var(--neon-pink)">${m.t2Name}</span>
+            `;
+            historyContainer.appendChild(div);
+        });
+
+        renderStats(pStats, dStats);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+    }
+
+    function updateStats(t1Name, t2Name, s1, s2, pStats, dStats) {
+        // Legs optellen
+        dStats[t1Name].legsFor += s1; dStats[t1Name].legsAg += s2;
+        dStats[t2Name].legsFor += s2; dStats[t2Name].legsAg += s1;
+
+        const t1Players = t1Name.split(' & ');
+        const t2Players = t2Name.split(' & ');
+
+        t1Players.forEach(p => { if(pStats[p]) { pStats[p].legsFor += s1; pStats[p].legsAg += s2; }});
+        t2Players.forEach(p => { if(pStats[p]) { pStats[p].legsFor += s2; pStats[p].legsAg += s1; }});
+
+        // Winst en Punten logica (punten = verschil in legs)
+        let diff = Math.abs(s1 - s2);
+        if (s1 > s2) {
+            dStats[t1Name].w++; dStats[t1Name].pts += diff; dStats[t2Name].l++;
+            t1Players.forEach(p => { if(pStats[p]) { pStats[p].w++; pStats[p].pts += diff; }});
+            t2Players.forEach(p => { if(pStats[p]) { pStats[p].l++; }});
+        } else if (s2 > s1) {
+            dStats[t2Name].w++; dStats[t2Name].pts += diff; dStats[t1Name].l++;
+            t2Players.forEach(p => { if(pStats[p]) { pStats[p].w++; pStats[p].pts += diff; }});
+            t1Players.forEach(p => { if(pStats[p]) { pStats[p].l++; }});
+        }
+    }
+
+    function renderStats(pStats, dStats) {
+        // Sorteer Individueel (Op Punten, dan op Saldo)
+        const sortedPlayers = Object.keys(pStats).sort((a,b) => {
+            if(pStats[b].pts !== pStats[a].pts) return pStats[b].pts - pStats[a].pts;
+            return (pStats[b].legsFor - pStats[b].legsAg) - (pStats[a].legsFor - pStats[a].legsAg);
+        });
+        document.getElementById('individual-body').innerHTML = sortedPlayers.map((p, i) => `
+            <tr><td>${i+1}</td><td>${p}</td><td style="color:var(--neon-blue);font-weight:bold">${pStats[p].pts}</td><td>${pStats[p].w}</td><td>${pStats[p].l}</td><td>${pStats[p].legsFor - pStats[p].legsAg}</td></tr>
+        `).join('');
+
+        // Sorteer Duo (Op Punten, dan op Saldo)
+        const sortedDuos = Object.keys(dStats).sort((a,b) => {
+             if(dStats[b].pts !== dStats[a].pts) return dStats[b].pts - dStats[a].pts;
+             return (dStats[b].legsFor - dStats[b].legsAg) - (dStats[a].legsFor - dStats[a].legsAg);
+        });
+        document.getElementById('duo-body').innerHTML = sortedDuos.map((d, i) => `
+            <tr><td>${i+1}</td><td>${d}</td><td style="color:var(--neon-pink);font-weight:bold">${dStats[d].pts}</td><td>${dStats[d].w}</td><td>${dStats[d].l}</td><td>${dStats[d].legsFor - dStats[d].legsAg}</td></tr>
+        `).join('');
+    }
+
+    // Start direct met laden
+    fetchData();
+
+</script>
+</body>
+</html>
