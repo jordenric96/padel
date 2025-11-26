@@ -12,6 +12,7 @@
             --text-muted: #94a3b8;
             --neon-blue: #00ffff;
             --neon-pink: #ff00ff;
+            --accent-gold: #ffd700;
         }
 
         body {
@@ -23,13 +24,21 @@
         }
 
         h1, h2, h3 { text-transform: uppercase; text-align: center; letter-spacing: 2px; }
-        h1 { font-size: 2rem; text-shadow: 2px 2px 0px var(--neon-pink), -2px -2px 0px var(--neon-blue); }
-        h2 { border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px; color: var(--neon-blue); font-size: 1.2rem; }
+        h1 { font-size: 2rem; text-shadow: 2px 2px 0px var(--neon-pink), -2px -2px 0px var(--neon-blue); margin-bottom: 30px; }
+        h2 { border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px; color: var(--neon-blue); font-size: 1.2rem; margin-top: 40px;}
         
         .container { max-width: 1200px; margin: 0 auto; }
+        
+        /* GRIDS */
         .stats-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        @media (min-width: 900px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+        .fun-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+        
+        @media (min-width: 900px) { 
+            .stats-grid { grid-template-columns: 1fr 1fr; } 
+            .fun-grid { grid-template-columns: 1fr 1fr 1fr 1fr; }
+        }
 
+        /* TABLES */
         .table-container {
             background: var(--card-bg);
             border-radius: 10px;
@@ -44,26 +53,28 @@
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         th, td { padding: 10px 5px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
         th { color: var(--text-muted); font-size: 0.8rem; }
-        tbody tr:nth-child(1) td:first-child { color: #FFD700; text-shadow: 0 0 5px #FFD700; font-weight: bold; } 
+        tbody tr:nth-child(1) td:first-child { color: var(--accent-gold); text-shadow: 0 0 5px var(--accent-gold); font-weight: bold; } 
         tbody tr:nth-child(2) td:first-child { color: #C0C0C0; font-weight: bold; }
         tbody tr:nth-child(3) td:first-child { color: #CD7F32; font-weight: bold; }
 
-        .loading { text-align: center; padding: 20px; color: var(--neon-blue); font-style: italic; }
-        
-        .refresh-btn {
-            display: block;
-            margin: 20px auto;
-            background: transparent;
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 20px;
-            text-transform: uppercase;
-            font-weight: bold;
+        /* FUN STATS CARDS */
+        .fun-card {
+            background: linear-gradient(145deg, #1e293b, #162030);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
-        .refresh-btn:hover { background: var(--neon-blue); color: black; }
+        .fun-icon { font-size: 2rem; margin-bottom: 10px; }
+        .fun-title { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 5px; }
+        .fun-value { font-size: 1.1rem; font-weight: bold; color: var(--text-main); }
+        .fun-sub { font-size: 0.8rem; color: var(--neon-blue); margin-top: 5px; }
 
+        /* MATCH LIST */
         .match-list { margin-top: 20px; }
         .match-card {
             background: var(--card-bg);
@@ -77,6 +88,15 @@
         }
         .score-display { font-weight: bold; font-size: 1.2rem; min-width: 60px; text-align: center; }
         .day-badge { font-size: 0.8rem; color: var(--text-muted); margin-right: 10px; }
+        
+        .loading { text-align: center; padding: 20px; color: var(--neon-blue); font-style: italic; }
+        .refresh-btn {
+            display: block; margin: 20px auto; background: transparent; border: 1px solid var(--neon-blue);
+            color: var(--neon-blue); padding: 10px 20px; cursor: pointer; border-radius: 20px;
+            text-transform: uppercase; font-weight: bold;
+        }
+        .refresh-btn:hover { background: var(--neon-blue); color: black; }
+
     </style>
 </head>
 <body>
@@ -84,12 +104,40 @@
 <div class="container">
     <h1>Padel Competitie</h1>
     
-    <div id="loading" class="loading">Data ophalen uit Google Sheets...</div>
+    <div id="loading" class="loading">Statistieken laden...</div>
 
     <div id="dashboard" style="display:none;">
+        
+        <div class="fun-grid">
+            <div class="fun-card" style="border-bottom: 3px solid #ffaa00;">
+                <div class="fun-icon">🔥</div>
+                <div class="fun-title">Onstopbaar</div>
+                <div class="fun-value" id="streak-player">-</div>
+                <div class="fun-sub" id="streak-count">0 zeges op rij</div>
+            </div>
+            <div class="fun-card" style="border-bottom: 3px solid #00ffff;">
+                <div class="fun-icon">💥</div>
+                <div class="fun-title">Monsterzege</div>
+                <div class="fun-value" id="big-win-score">-</div>
+                <div class="fun-sub" id="big-win-team">-</div>
+            </div>
+            <div class="fun-card" style="border-bottom: 3px solid #ff00ff;">
+                <div class="fun-icon">😅</div>
+                <div class="fun-title">De Thriller</div>
+                <div class="fun-value" id="close-match-score">-</div>
+                <div class="fun-sub" id="close-match-teams">-</div>
+            </div>
+            <div class="fun-card" style="border-bottom: 3px solid #00ff9d;">
+                <div class="fun-icon">🍩</div>
+                <div class="fun-title">De Bakker</div>
+                <div class="fun-value" id="bagel-player">-</div>
+                <div class="fun-sub" id="bagel-count">0x 6-0 gewonnen</div>
+            </div>
+        </div>
+
         <div class="stats-grid">
             <div class="table-container blue-theme">
-                <h3>Individuele Rangschikking</h3>
+                <h3>Individueel</h3>
                 <table>
                     <thead><tr><th>#</th><th>Speler</th><th>Ptn</th><th>W</th><th>L</th><th>Saldo</th></tr></thead>
                     <tbody id="individual-body"></tbody>
@@ -97,7 +145,7 @@
             </div>
 
             <div class="table-container pink-theme">
-                <h3>Duo Rangschikking</h3>
+                <h3>Duo's</h3>
                 <table>
                     <thead><tr><th>#</th><th>Team</th><th>Ptn</th><th>W</th><th>L</th><th>Saldo</th></tr></thead>
                     <tbody id="duo-body"></tbody>
@@ -105,7 +153,7 @@
             </div>
         </div>
         
-        <h2>Recent Gespeeld</h2>
+        <h2>Laatste Wedstrijden</h2>
         <div id="match-history" class="match-list"></div>
     </div>
     
@@ -113,7 +161,6 @@
 </div>
 
 <script>
-    // DEZE LINK IS NU AUTOMATISCH INGEVULD:
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOWlUbVIA7AVW_vM2uN9DU86vEPKm_2GatKYh_50s0wXnY_K9rETMBddyn6vdWgcYzK6WNJ4Xp1TUi/pub?output=csv";
 
     async function fetchData() {
@@ -123,25 +170,27 @@
             processCSV(data);
         } catch (error) {
             document.getElementById('loading').innerHTML = "Fout bij laden. Check je internetverbinding.";
-            console.error(error);
         }
     }
 
     function processCSV(csvText) {
-        const rows = csvText.split('\n').slice(1); // Skip headers
+        const rows = csvText.split('\n').slice(1);
         
         let pStats = {};
-        ["Jorden", "Yarni", "Lars", "Vince"].forEach(p => pStats[p] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0 });
+        const playerNames = ["Jorden", "Yarni", "Lars", "Vince"];
+        playerNames.forEach(p => pStats[p] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0, bagels: 0, currentStreak: 0, maxStreak: 0 });
         let dStats = {};
-
-        const historyContainer = document.getElementById('match-history');
+        
+        let matches = []; // For storing parsed matches
+        let historyContainer = document.getElementById('match-history');
         historyContainer.innerHTML = '';
 
-        let playedMatches = [];
+        // STATS VARIABLES
+        let biggestWin = { diff: -1, text: '', score: '' };
+        let closestMatch = { diff: 100, text: '', score: '' };
 
         rows.forEach(row => {
             const cols = row.split(',');
-            // We verwachten 6 kolommen: Speeldag, Wedstrijd, Team1, Team2, Score1, Score2
             if (cols.length < 6) return;
 
             const day = cols[0].trim();
@@ -150,20 +199,101 @@
             const s1 = parseInt(cols[4]);
             const s2 = parseInt(cols[5]);
 
-            // Als scores leeg of ongeldig zijn, slaan we deze regel over
             if (isNaN(s1) || isNaN(s2)) return;
 
-            // Init Duo Stats (als ze nog niet bestaan)
+            // Init Duo
             if (!dStats[t1Name]) dStats[t1Name] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0 };
             if (!dStats[t2Name]) dStats[t2Name] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0 };
 
-            updateStats(t1Name, t2Name, s1, s2, pStats, dStats);
+            matches.push({ day, t1Name, t2Name, s1, s2 });
 
-            playedMatches.push({ day, t1Name, t2Name, s1, s2 });
+            // --- CALCULATIONS ---
+            const t1Players = t1Name.split(' & ');
+            const t2Players = t2Name.split(' & ');
+
+            // Legs
+            dStats[t1Name].legsFor += s1; dStats[t1Name].legsAg += s2;
+            dStats[t2Name].legsFor += s2; dStats[t2Name].legsAg += s1;
+            
+            t1Players.forEach(p => { if(pStats[p]) { pStats[p].legsFor += s1; pStats[p].legsAg += s2; }});
+            t2Players.forEach(p => { if(pStats[p]) { pStats[p].legsFor += s2; pStats[p].legsAg += s1; }});
+
+            let diff = Math.abs(s1 - s2);
+            let winners = [];
+            let losers = [];
+
+            if (s1 > s2) {
+                // Team 1 wint
+                dStats[t1Name].w++; dStats[t1Name].pts += diff; dStats[t2Name].l++;
+                winners = t1Players; losers = t2Players;
+                
+                // Fun Stats: Biggest Win
+                if (diff > biggestWin.diff) {
+                    biggestWin = { diff: diff, text: t1Name, score: `${s1}-${s2}` };
+                }
+                // Fun Stats: Bagel (6-0 check)
+                if (s2 === 0) t1Players.forEach(p => { if(pStats[p]) pStats[p].bagels++; });
+
+            } else if (s2 > s1) {
+                // Team 2 wint
+                dStats[t2Name].w++; dStats[t2Name].pts += diff; dStats[t1Name].l++;
+                winners = t2Players; losers = t1Players;
+
+                if (diff > biggestWin.diff) {
+                    biggestWin = { diff: diff, text: t2Name, score: `${s2}-${s1}` };
+                }
+                if (s1 === 0) t2Players.forEach(p => { if(pStats[p]) pStats[p].bagels++; });
+            }
+
+            // Closest Match Logic
+            if (diff > 0 && diff < closestMatch.diff) {
+                closestMatch = { diff: diff, text: `${t1Name} vs ${t2Name}`, score: `${s1}-${s2}` };
+            }
+
+            // Update Individual Points & Streaks
+            winners.forEach(p => {
+                if(pStats[p]) {
+                    pStats[p].w++;
+                    pStats[p].pts += diff;
+                    pStats[p].currentStreak++;
+                    if (pStats[p].currentStreak > pStats[p].maxStreak) pStats[p].maxStreak = pStats[p].currentStreak;
+                }
+            });
+            losers.forEach(p => {
+                if(pStats[p]) {
+                    pStats[p].l++;
+                    pStats[p].currentStreak = 0; // Reset streak on loss
+                }
+            });
         });
 
-        // Toon laatste 10 wedstrijden in historie (nieuwste bovenaan)
-        playedMatches.reverse().slice(0, 10).forEach(m => {
+        // --- RENDER FUN STATS ---
+        
+        // 1. Longest Streak
+        let streakKing = playerNames.reduce((prev, curr) => pStats[curr].maxStreak > pStats[prev].maxStreak ? curr : prev, playerNames[0]);
+        document.getElementById('streak-player').innerText = streakKing;
+        document.getElementById('streak-count').innerText = `${pStats[streakKing].maxStreak} zeges op rij`;
+
+        // 2. Biggest Win
+        if(biggestWin.diff > -1) {
+            document.getElementById('big-win-score').innerText = biggestWin.score;
+            document.getElementById('big-win-team').innerText = biggestWin.text;
+        }
+
+        // 3. Closest Match
+        if(closestMatch.diff < 100) {
+            document.getElementById('close-match-score').innerText = closestMatch.score;
+            document.getElementById('close-match-teams').innerText = "Spannendste match";
+        }
+
+        // 4. Bagel King
+        let bagelKing = playerNames.reduce((prev, curr) => pStats[curr].bagels > pStats[prev].bagels ? curr : prev, playerNames[0]);
+        document.getElementById('bagel-player').innerText = bagelKing;
+        document.getElementById('bagel-count').innerText = `${pStats[bagelKing].bagels}x 6-0 gewonnen`;
+
+
+        // --- RENDER HISTORY ---
+        matches.reverse().slice(0, 10).forEach(m => {
             const div = document.createElement('div');
             div.className = 'match-card';
             div.innerHTML = `
@@ -177,37 +307,13 @@
             historyContainer.appendChild(div);
         });
 
-        renderStats(pStats, dStats);
+        renderTables(pStats, dStats);
         document.getElementById('loading').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
     }
 
-    function updateStats(t1Name, t2Name, s1, s2, pStats, dStats) {
-        // Legs optellen
-        dStats[t1Name].legsFor += s1; dStats[t1Name].legsAg += s2;
-        dStats[t2Name].legsFor += s2; dStats[t2Name].legsAg += s1;
-
-        const t1Players = t1Name.split(' & ');
-        const t2Players = t2Name.split(' & ');
-
-        t1Players.forEach(p => { if(pStats[p]) { pStats[p].legsFor += s1; pStats[p].legsAg += s2; }});
-        t2Players.forEach(p => { if(pStats[p]) { pStats[p].legsFor += s2; pStats[p].legsAg += s1; }});
-
-        // Winst en Punten logica (punten = verschil in legs)
-        let diff = Math.abs(s1 - s2);
-        if (s1 > s2) {
-            dStats[t1Name].w++; dStats[t1Name].pts += diff; dStats[t2Name].l++;
-            t1Players.forEach(p => { if(pStats[p]) { pStats[p].w++; pStats[p].pts += diff; }});
-            t2Players.forEach(p => { if(pStats[p]) { pStats[p].l++; }});
-        } else if (s2 > s1) {
-            dStats[t2Name].w++; dStats[t2Name].pts += diff; dStats[t1Name].l++;
-            t2Players.forEach(p => { if(pStats[p]) { pStats[p].w++; pStats[p].pts += diff; }});
-            t1Players.forEach(p => { if(pStats[p]) { pStats[p].l++; }});
-        }
-    }
-
-    function renderStats(pStats, dStats) {
-        // Sorteer Individueel (Op Punten, dan op Saldo)
+    function renderTables(pStats, dStats) {
+        // Individual
         const sortedPlayers = Object.keys(pStats).sort((a,b) => {
             if(pStats[b].pts !== pStats[a].pts) return pStats[b].pts - pStats[a].pts;
             return (pStats[b].legsFor - pStats[b].legsAg) - (pStats[a].legsFor - pStats[a].legsAg);
@@ -216,7 +322,7 @@
             <tr><td>${i+1}</td><td>${p}</td><td style="color:var(--neon-blue);font-weight:bold">${pStats[p].pts}</td><td>${pStats[p].w}</td><td>${pStats[p].l}</td><td>${pStats[p].legsFor - pStats[p].legsAg}</td></tr>
         `).join('');
 
-        // Sorteer Duo (Op Punten, dan op Saldo)
+        // Duo
         const sortedDuos = Object.keys(dStats).sort((a,b) => {
              if(dStats[b].pts !== dStats[a].pts) return dStats[b].pts - dStats[a].pts;
              return (dStats[b].legsFor - dStats[b].legsAg) - (dStats[a].legsFor - dStats[a].legsAg);
@@ -226,9 +332,7 @@
         `).join('');
     }
 
-    // Start direct met laden
     fetchData();
-
 </script>
 </body>
 </html>
