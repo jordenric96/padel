@@ -3,171 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Padel Pro Dashboard</title>
+    <title>Padel Pro Hawkins Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --neon-blue: #00ffff;
-            --neon-pink: #ff00ff;
-            --accent-gold: #ffd700;
-            --accent-silver: #e0e0e0;
-            --accent-bronze: #cd7f32;
-            --accent-pear: #c0ff00;
+            --st-red: #ff1515; /* De iconische rode gloed */
+            --st-glow: #ff9999;
+            --bg-color: #050510; /* Zeer donkerblauw/zwart */
+            --card-bg: #101018;
+            --text-main: #e0e0e0;
+            --text-muted: #888;
+            --neon-blue: #0088ff; /* Voor het 'Upside Down' contrast */
+            --retro-gold: #ffcc00;
+            --font-title: 'Libre Baskerville', serif; /* Lijkt op Benguiat */
+            --font-data: 'Share Tech Mono', monospace; /* Jaren 80 computer */
         }
 
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; }
+        body {
+            font-family: var(--font-data);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            background-image: radial-gradient(circle at 50% 50%, #1a0b0b 0%, #000000 100%);
+            min-height: 100vh;
+        }
+
+        /* --- TYPOGRAPHY & HEADER --- */
+        h1, h2, h3 { font-family: var(--font-title); text-transform: uppercase; text-align: center; letter-spacing: 1px; }
         
-        h1, h2, h3 { text-transform: uppercase; text-align: center; letter-spacing: 2px; }
-        h1 { font-size: 2rem; text-shadow: 2px 2px 0px var(--neon-pink), -2px -2px 0px var(--neon-blue); margin-bottom: 10px; }
-        h2 { border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px; color: var(--neon-blue); font-size: 1.2rem; margin-top: 40px;}
-        h4 { margin: 0 0 10px 0; color: var(--neon-blue); text-align: center; text-transform: uppercase; font-size: 0.9rem;}
+        h1 {
+            font-size: 2.5rem;
+            color: transparent;
+            -webkit-text-stroke: 1.5px var(--st-red);
+            text-shadow: 0 0 10px var(--st-red), 0 0 20px var(--st-red);
+            margin-bottom: 5px;
+            position: relative;
+        }
+        /* De rode balken boven en onder de titel */
+        .header-line { height: 2px; background: var(--st-red); width: 100px; margin: 0 auto 30px auto; box-shadow: 0 0 10px var(--st-red); }
+
+        h2 { border-bottom: 1px solid var(--st-red); padding-bottom: 10px; color: var(--st-red); font-size: 1.5rem; margin-top: 50px; text-shadow: 0 0 5px var(--st-red); }
+        h3 { color: var(--text-main); font-size: 1.2rem; }
+        h4 { margin: 0 0 10px 0; color: var(--st-red); text-align: center; text-transform: uppercase; font-size: 1rem; letter-spacing: 2px;}
 
         .container { max-width: 1200px; margin: 0 auto; }
 
-        .top-bar {
-            background: var(--card-bg); padding: 15px; border-radius: 10px; margin-bottom: 30px;
-            display: flex; justify-content: center; align-items: center; gap: 15px;
-            border: 1px solid var(--neon-blue); box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+        /* --- BUTTONS (Season Selector) --- */
+        .season-buttons {
+            display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 40px;
         }
-        select { background: #0f172a; color: white; border: 1px solid var(--text-muted); padding: 8px 15px; border-radius: 5px; font-size: 1rem; cursor: pointer; }
-
-        .champions-wall { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 40px; }
-        .champion-card {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(0,0,0,0));
-            border: 1px solid var(--accent-gold); padding: 15px 30px; border-radius: 10px;
-            text-align: center; box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        .retro-btn {
+            background: transparent;
+            border: 2px solid var(--st-red);
+            color: var(--st-red);
+            padding: 10px 20px;
+            font-family: var(--font-title);
+            font-size: 1rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 5px var(--st-red);
+            text-shadow: 0 0 5px var(--st-red);
         }
-        .champion-card::before { content: '👑'; font-size: 1.5rem; display: block; margin-bottom: 5px; }
-        .champion-year { color: var(--accent-gold); font-weight: bold; font-size: 0.9rem; text-transform: uppercase; }
-        .champion-name { font-size: 1.4rem; font-weight: bold; color: #fff; margin-top: 5px; }
-        .champion-pts { font-size: 0.8rem; color: var(--text-muted); }
+        .retro-btn:hover, .retro-btn.active {
+            background: var(--st-red);
+            color: #000;
+            box-shadow: 0 0 20px var(--st-red);
+        }
 
+        /* --- PODIUM 2025 SPECIAL --- */
+        .podium-section {
+            display: flex; justify-content: center; gap: 30px; margin: 40px 0;
+            flex-wrap: wrap; align-items: flex-end;
+        }
+        .podium-card {
+            background: linear-gradient(180deg, rgba(20,20,30,0.9) 0%, rgba(0,0,0,0.9) 100%);
+            border: 1px solid #333;
+            padding: 20px;
+            text-align: center;
+            width: 140px;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+        }
+        .podium-card.rank-1 { order: 2; border-color: var(--retro-gold); transform: scale(1.1); box-shadow: 0 0 20px rgba(255, 204, 0, 0.3); z-index: 2; }
+        .podium-card.rank-2 { order: 1; border-color: #c0c0c0; }
+        .podium-card.rank-3 { order: 3; border-color: #cd7f32; }
+        
+        .podium-medal { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+        .podium-name { font-family: var(--font-title); font-size: 1.2rem; font-weight: bold; color: #fff; }
+        .podium-stats { font-size: 0.8rem; color: var(--text-muted); margin-top: 5px; }
+
+        /* --- GRIDS & TABLES --- */
         .stats-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 30px; }
         .hall-of-fame-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
 
-        .table-container { background: var(--card-bg); border-radius: 10px; padding: 15px; box-shadow: 0 0 15px rgba(0, 255, 255, 0.1); overflow-x: auto; }
-        .table-container.pink-theme { box-shadow: 0 0 15px rgba(255, 0, 255, 0.1); }
-        .table-container.pink-theme h3 { color: var(--neon-pink); }
-        .table-container.blue-theme h3 { color: var(--neon-blue); }
-
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th, td { padding: 10px 6px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); vertical-align: middle; }
-        th { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
-        
-        .rank-table tbody tr:nth-child(1) td:first-child { color: var(--accent-gold); font-weight: bold; font-size: 1.1rem; } 
-        .rank-table tbody tr:nth-child(2) td:first-child { color: var(--accent-silver); font-weight: bold; }
-        .rank-table tbody tr:nth-child(3) td:first-child { color: var(--accent-bronze); font-weight: bold; }
-
-        .hof-card { background: linear-gradient(145deg, #1e293b, #162030); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 15px; }
-        .hof-list { list-style: none; padding: 0; margin: 0; }
-        .hof-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; }
-        .hof-item:last-child { border-bottom: none; }
-        .hof-val { font-weight: bold; color: var(--neon-pink); margin-left: 10px; }
-
-        .match-section-title { color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; margin-top: 30px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-        .match-card {
-            background: var(--card-bg); margin-bottom: 10px; padding: 12px; border-radius: 5px;
-            display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--neon-pink);
+        .table-container {
+            background: rgba(16, 16, 24, 0.8);
+            border: 1px solid #333;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            overflow-x: auto;
+            position: relative;
         }
-        .match-card.future { border-left: 3px solid var(--text-muted); opacity: 0.8; }
-        .score-display { font-weight: bold; font-size: 1.2rem; min-width: 70px; text-align: center; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 5px; margin: 0 10px; }
-        .day-badge { font-size: 0.9rem; color: #000; background: var(--neon-blue); padding: 2px 8px; border-radius: 10px; margin-right: 10px; font-weight: bold;}
-        .date-small { font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 2px;}
+        /* Scanline effect overlay */
+        .table-container::after {
+            content: " "; display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px;
+            pointer-events: none; z-index: 10;
+        }
 
-        .chart-container { background: var(--card-bg); border-radius: 10px; padding: 15px; margin-bottom: 30px; height: 300px; position: relative; }
-        .loading { text-align: center; padding: 20px; color: var(--neon-blue); font-style: italic; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        th { text-align: center; padding: 10px; color: var(--st-red); border-bottom: 2px solid var(--st-red); font-family: var(--font-title); }
+        td { padding: 10px 5px; text-align: center; border-bottom: 1px solid #333; }
         
-        #debug-log { background: #330000; color: #ffcccc; padding: 15px; border: 1px solid red; display: none; margin-bottom: 20px; white-space: pre-wrap; font-family: monospace; font-size:0.8rem;}
+        .rank-table tbody tr:nth-child(1) td { color: var(--retro-gold); text-shadow: 0 0 5px var(--retro-gold); } 
+
+        /* --- HALL OF FAME CARDS (VHS Style) --- */
+        .hof-card {
+            background: #111;
+            border: 1px solid #444;
+            border-left: 4px solid var(--st-red);
+            padding: 15px;
+            position: relative;
+        }
+        .hof-list { list-style: none; padding: 0; margin: 0; }
+        .hof-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #333; font-size: 0.85rem; }
+        .hof-val { color: var(--st-red); font-weight: bold; text-shadow: 0 0 3px var(--st-red); }
+
+        /* --- MATCH LIST --- */
+        .match-section-title { color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; margin-top: 30px; margin-bottom: 10px; border-bottom: 1px solid var(--st-red); display: inline-block; padding-right: 20px; }
+        .match-card {
+            background: rgba(20,20,30,0.8); margin-bottom: 10px; padding: 12px;
+            border: 1px solid #333; display: flex; justify-content: space-between; align-items: center;
+        }
+        .match-card:hover { border-color: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); }
+        .match-card.future { opacity: 0.6; border-style: dashed; }
+        
+        .score-display { font-size: 1.3rem; min-width: 80px; text-align: center; color: #fff; text-shadow: 0 0 5px #fff; }
+        .day-badge { font-size: 0.8rem; background: #333; color: #fff; padding: 2px 6px; margin-right: 10px; border: 1px solid #555;}
+        .date-small { font-size: 0.7rem; color: #666; display: block; margin-bottom: 2px;}
+
+        /* --- CHART --- */
+        .chart-container { background: rgba(0,0,0,0.5); border: 1px solid #333; padding: 15px; margin-bottom: 30px; height: 300px; }
+        .loading { text-align: center; padding: 50px; color: var(--st-red); font-family: var(--font-title); font-size: 1.5rem; animation: blink 1.5s infinite; }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        #debug-log { background: #330000; color: #ffcccc; padding: 15px; border: 1px solid red; display: none; margin-bottom: 20px; font-size:0.8rem;}
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Padel Competitie Ricour - Hemmeryckx</h1>
+    <h1>Padel Pro Hawkins</h1>
+    <div class="header-line"></div>
     
     <div id="debug-log"></div>
-    <div id="loading" class="loading">Data controleren en laden...</div>
+    <div id="loading" class="loading">CONNECTING TO THE UPSIDE DOWN...</div>
 
     <div id="dashboard" style="display:none;">
         
-        <div class="top-bar">
-            <label for="yearSelect" style="color:var(--neon-blue); font-weight:bold;">KIES SEIZOEN:</label>
-            <select id="yearSelect" onchange="renderDashboard()"></select>
-        </div>
+        <div id="podium-2025-container">
+            </div>
 
-        <div id="champions-container" class="champions-wall"></div>
+        <div class="season-buttons" id="season-buttons">
+            </div>
 
         <div class="chart-container">
             <canvas id="pointsChart"></canvas>
         </div>
 
-        <h3 id="hof-title" style="margin-bottom: 15px; color: var(--accent-gold);">Hall of Fame</h3>
+        <h3 id="hof-title" style="margin-bottom: 15px; color: var(--st-red);">Hall of Fame</h3>
         <div class="hall-of-fame-grid">
             <div class="hof-card">
                 <h4>🔥 Onstopbaar</h4>
-                <div style="text-align:center; font-size:0.7rem; color:#aaa; margin-bottom:5px;">Meeste zeges op rij</div>
+                <div style="text-align:center; font-size:0.7rem; color:#666; margin-bottom:5px;">ZEGES OP RIJ</div>
                 <ul class="hof-list" id="list-streaks"></ul>
             </div>
-            <div class="hof-card" style="border-bottom: 3px solid var(--accent-pear);">
-                <h4>🍐 Den dubbele Gerard</h4>
-                <div style="text-align:center; font-size:0.7rem; color:#aaa; margin-bottom:5px;">Langste verlies streak</div>
+            <div class="hof-card" style="border-left-color: var(--neon-blue);">
+                <h4>❄️ The Void</h4>
+                <div style="text-align:center; font-size:0.7rem; color:#666; margin-bottom:5px;">VERLIES STREAK</div>
                 <ul class="hof-list" id="list-loss-streaks"></ul>
             </div>
             <div class="hof-card">
-                <h4>💥 Slachthuis</h4>
-                <div style="text-align:center; font-size:0.7rem; color:#aaa; margin-bottom:5px;">Grootste puntenverschil</div>
+                <h4>💥 Demogorgon</h4>
+                <div style="text-align:center; font-size:0.7rem; color:#666; margin-bottom:5px;">GROOTSTE VERSCHIL</div>
                 <ul class="hof-list" id="list-bigwins"></ul>
             </div>
             <div class="hof-card">
-                <h4>😅 Nagelbijters</h4>
-                <div style="text-align:center; font-size:0.7rem; color:#aaa; margin-bottom:5px;">Kleinste puntenverschil</div>
+                <h4>😅 Close Call</h4>
+                <div style="text-align:center; font-size:0.7rem; color:#666; margin-bottom:5px;">KLEINSTE VERSCHIL</div>
                 <ul class="hof-list" id="list-thrillers"></ul>
             </div>
              <div class="hof-card">
-                <h4>🍩 De Bakker</h4>
-                <div style="text-align:center; font-size:0.7rem; color:#aaa; margin-bottom:5px;">Totaal aantal 'bagels' (6-0)</div>
+                <h4>🍩 Eggos</h4>
+                <div style="text-align:center; font-size:0.7rem; color:#666; margin-bottom:5px;">6-0 BAGELS</div>
                 <ul class="hof-list" id="list-bagels"></ul>
             </div>
         </div>
 
         <div class="stats-grid">
-            <div class="table-container blue-theme">
-                <h3 id="indiv-title">Individueel</h3>
+            <div class="table-container">
+                <h3 style="color:var(--st-red)">INDIVIDUEEL</h3>
                 <table class="rank-table">
-                    <thead><tr><th>#</th><th>Speler</th><th>Ptn</th><th>W%</th><th>L+</th><th>L-</th><th>Saldo</th></tr></thead>
+                    <thead><tr><th>#</th><th>SPELER</th><th>PTN</th><th>W%</th><th>L+</th><th>L-</th><th>SALDO</th></tr></thead>
                     <tbody id="individual-body"></tbody>
                 </table>
             </div>
 
-            <div class="table-container pink-theme">
-                <h3 id="duo-title">Duo's</h3>
+            <div class="table-container">
+                <h3 style="color:var(--neon-blue)">DUO'S</h3>
                 <table class="rank-table">
-                    <thead><tr><th>#</th><th>Team</th><th>Ptn</th><th>W%</th><th>L+</th><th>L-</th><th>Saldo</th></tr></thead>
+                    <thead><tr><th>#</th><th>TEAM</th><th>PTN</th><th>W%</th><th>L+</th><th>L-</th><th>SALDO</th></tr></thead>
                     <tbody id="duo-body"></tbody>
                 </table>
             </div>
         </div>
 
         <div class="table-container">
-            <h3 style="color: var(--accent-gold); text-align: center;">Head-to-Head</h3>
+            <h3>HEAD-TO-HEAD</h3>
             <table>
                 <thead>
                     <tr>
-                        <th style="text-align:right; width: 40%">Team 1</th>
-                        <th style="width: 20%">Winst</th>
-                        <th style="text-align:left; width: 40%">Team 2</th>
+                        <th style="text-align:right; width: 40%">TEAM 1</th>
+                        <th style="width: 20%">VS</th>
+                        <th style="text-align:left; width: 40%">TEAM 2</th>
                     </tr>
                 </thead>
                 <tbody id="h2h-body-content"></tbody>
             </table>
         </div>
         
-        <h2>Wedstrijden</h2>
+        <h2 style="border:none;">ARCHIEF</h2>
         <div id="matches-container"></div>
     </div>
 </div>
@@ -178,6 +248,7 @@
     let db = { 'all': createScope() };
     let availableYears = [];
     let allDetectedPlayers = new Set(["Jorden", "Yarni", "Lars", "Vince"]);
+    let activeScope = 'all';
 
     function createScope() {
         return {
@@ -191,7 +262,7 @@
         const d = document.getElementById('debug-log');
         d.style.display = 'block';
         d.innerText += "FOUT: " + msg + "\n";
-        document.getElementById('loading').innerHTML = "<span style='color:red'>Er ging iets mis. Zie het rode kader hierboven.</span>";
+        document.getElementById('loading').innerHTML = "<span style='color:red'>DATA CORRUPTION DETECTED</span>";
     }
 
     async function fetchData() {
@@ -209,7 +280,6 @@
         if (!db[year]) {
             db[year] = createScope();
             if (year !== 'all') availableYears.push(year);
-            // Init chart voor bekende spelers
             allDetectedPlayers.forEach(p => {
                 if (!db[year].chart[p]) db[year].chart[p] = [0];
             });
@@ -223,7 +293,6 @@
         if (!d.pStats[player]) {
             d.pStats[player] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0, bagels: 0, currentStreak: 0, currentLossStreak: 0 };
         }
-        // Chart sync
         if (!d.chart[player]) {
             const len = d.chart.labels ? d.chart.labels.length : 1;
             d.chart[player] = new Array(len).fill(0);
@@ -231,7 +300,6 @@
         }
     }
 
-    // VEILIG TOEVOEGEN AAN LIJSTEN
     function safePush(arr, item) {
         if (arr && Array.isArray(arr)) arr.push(item);
     }
@@ -241,7 +309,6 @@
             const rows = csvText.split('\n');
             if (rows.length < 2) throw new Error("Leeg bestand");
 
-            // DELIMITER DETECTIE
             const firstLine = rows[0];
             let delimiter = ',';
             if (firstLine.includes('\t')) delimiter = '\t';
@@ -256,13 +323,12 @@
             const idxS1 = headers.findIndex(h => h.includes('score team 1') || h.includes('score 1'));
             const idxS2 = headers.findIndex(h => h.includes('score team 2') || h.includes('score 2'));
 
-            if (idxDate === -1 || idxT1 === -1 || idxS1 === -1) throw new Error("Kolommen niet gevonden. Controleer of het bestand headers heeft (Datum, Team 1, Score 1).");
+            if (idxDate === -1 || idxT1 === -1 || idxS1 === -1) throw new Error("Kolommen niet gevonden.");
 
             for (let i = 1; i < rows.length; i++) {
                 if (!rows[i].trim()) continue;
                 const cols = rows[i].split(delimiter);
                 
-                // Veilig data ophalen
                 const getCol = (idx) => (cols[idx] ? cols[idx].trim() : "");
                 const dateStr = getCol(idxDate);
                 const dayNum = getCol(idxDay);
@@ -301,12 +367,10 @@
                     const d = db[scope];
                     [...t1Players, ...t2Players].forEach(p => ensurePlayer(scope, p));
 
-                    // CHART LABEL
                     if (d.chart.labels) {
                         const lastL = d.chart.labels[d.chart.labels.length - 1];
                         if (lastL !== dayNum) {
                             d.chart.labels.push(dayNum);
-                            // Vul gaten op voor alle spelers
                             allDetectedPlayers.forEach(p => {
                                 if (d.chart[p]) {
                                     const val = d.chart[p].length > 0 ? d.chart[p][d.chart[p].length - 1] : 0;
@@ -316,17 +380,14 @@
                         }
                     }
 
-                    // CHART VALUES
                     const idx = d.chart.labels.length - 1;
                     winners.forEach(p => { if (d.chart[p]) d.chart[p][idx] += diff; });
 
-                    // DUO
                     if (!d.dStats[t1Name]) d.dStats[t1Name] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0 };
                     if (!d.dStats[t2Name]) d.dStats[t2Name] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0 };
                     d.dStats[t1Name].legsFor += s1; d.dStats[t1Name].legsAg += s2;
                     d.dStats[t2Name].legsFor += s2; d.dStats[t2Name].legsAg += s1;
 
-                    // PLAYER
                     t1Players.forEach(p => { d.pStats[p].legsFor += s1; d.pStats[p].legsAg += s2; });
                     t2Players.forEach(p => { d.pStats[p].legsFor += s2; d.pStats[p].legsAg += s1; });
 
@@ -340,7 +401,6 @@
                         losers.forEach(p => { d.pStats[p].l++; });
                     }
 
-                    // H2H
                     let key = [t1Name, t2Name].sort().join("|||");
                     if (!d.h2h[key]) {
                         d.h2h[key] = { t1: t1Name, t2: t2Name, t1Wins: 0, t2Wins: 0 };
@@ -349,12 +409,10 @@
                     if (s1 > s2) { (t1Name === d.h2h[key].t1) ? d.h2h[key].t1Wins++ : d.h2h[key].t2Wins++; }
                     else { (t1Name === d.h2h[key].t1) ? d.h2h[key].t2Wins++ : d.h2h[key].t1Wins++; }
 
-                    // HOF
                     if ((s2 === 0 && s1 > s2) || (s1 === 0 && s2 > s1)) winners.forEach(p => d.pStats[p].bagels++);
                     
                     safePush(d.bigWins, { diff, text: matchText, score: scoreText });
 
-                    // STREAKS
                     winners.forEach(p => {
                         d.pStats[p].currentStreak++;
                         if (d.pStats[p].currentLossStreak > 1) safePush(d.lossStreaks, { name: p, count: d.pStats[p].currentLossStreak });
@@ -381,47 +439,80 @@
             });
 
             availableYears = [...new Set(availableYears)].sort().reverse();
-            setupControls();
-
-            // Default 2026 or all
-            let defaultYear = availableYears.includes("2026") ? "2026" : (availableYears[0] || 'all');
-            document.getElementById('yearSelect').value = defaultYear;
             
-            renderChampions();
-            renderDashboard();
+            // RENDER
+            setupControls();
+            activeScope = availableYears.includes("2026") ? "2026" : (availableYears[0] || 'all');
+            
+            renderPodium2025(); // Render altijd podium 2025
+            renderDashboard(activeScope);
             
             document.getElementById('loading').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
 
         } catch (err) {
-            logError("Verwerking regel " + err.line + ": " + err.message);
-            console.error(err);
+            logError("Processing Error: " + err.message);
         }
     }
 
+    // --- SETUP RETRO BUTTONS ---
     function setupControls() {
-        const sel = document.getElementById('yearSelect');
-        sel.innerHTML = '';
-        availableYears.forEach(y => {
-            let opt = document.createElement('option'); opt.value = y; opt.text = `Seizoen ${y}`; sel.appendChild(opt);
-        });
-        let optAll = document.createElement('option'); optAll.value = 'all'; optAll.text = 'Alles (All-time)'; sel.appendChild(optAll);
+        const c = document.getElementById('season-buttons');
+        c.innerHTML = '';
+        
+        const createBtn = (val, text) => {
+            const btn = document.createElement('button');
+            btn.className = 'retro-btn';
+            if (val === activeScope) btn.classList.add('active');
+            btn.innerText = text;
+            btn.onclick = () => {
+                activeScope = val;
+                document.querySelectorAll('.retro-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderDashboard(val);
+            };
+            c.appendChild(btn);
+        };
+
+        availableYears.forEach(y => createBtn(y, y));
+        createBtn('all', 'ALL TIME');
     }
 
-    function renderChampions() {
-        const c = document.getElementById('champions-container'); c.innerHTML = '';
-        const cur = new Date().getFullYear().toString();
-        availableYears.forEach(y => {
-            if (y === cur) return;
-            const stats = db[y].pStats;
-            const w = Object.keys(stats).sort((a,b) => stats[b].pts - stats[a].pts)[0];
-            if (w) c.innerHTML += `<div class="champion-card"><div class="champion-year">Kampioen ${y}</div><div class="champion-name">${w}</div><div class="champion-pts">${stats[w].pts} ptn</div></div>`;
-        });
+    // --- RENDER PODIUM 2025 (VAST) ---
+    function renderPodium2025() {
+        const container = document.getElementById('podium-2025-container');
+        container.innerHTML = '';
+        
+        // Check of 2025 data bestaat
+        if (!db['2025']) return; // Verberg als geen 2025 data
+
+        const stats = db['2025'].pStats;
+        const sorted = Object.keys(stats).sort((a,b) => stats[b].pts - stats[a].pts).slice(0, 3);
+        
+        if (sorted.length === 0) return;
+
+        container.innerHTML = `<h2 style="margin-bottom:20px; width:100%;">🏆 PODIUM 2025 🏆</h2>
+                               <div class="podium-section">
+                                   ${getPodiumHTML(sorted[1], 2, stats)}
+                                   ${getPodiumHTML(sorted[0], 1, stats)}
+                                   ${getPodiumHTML(sorted[2], 3, stats)}
+                               </div>`;
     }
 
-    function renderDashboard() {
-        const s = document.getElementById('yearSelect').value;
-        const d = db[s];
+    function getPodiumHTML(player, rank, stats) {
+        if (!player) return '';
+        const medals = ['🥇', '🥈', '🥉'];
+        return `
+            <div class="podium-card rank-${rank}">
+                <div class="podium-medal">${medals[rank-1]}</div>
+                <div class="podium-name">${player}</div>
+                <div class="podium-stats">${stats[player].pts} PTN</div>
+            </div>
+        `;
+    }
+
+    function renderDashboard(scope) {
+        const d = db[scope];
         if(!d) return;
 
         // TABLES
@@ -431,55 +522,55 @@
         });
         document.getElementById('individual-body').innerHTML = pSorted.map((p,i) => {
             const st = d.pStats[p]; const tot = st.w + st.l;
-            return `<tr><td>${i+1}</td><td>${p}</td><td style="color:var(--neon-blue);font-weight:bold">${st.pts}</td><td style="font-size:0.8rem;color:#aaa">${tot>0?Math.round((st.w/tot)*100):0}%</td><td>${st.legsFor}</td><td>${st.legsAg}</td><td>${st.legsFor-st.legsAg}</td></tr>`;
+            return `<tr><td>${i+1}</td><td>${p}</td><td style="color:var(--st-red);font-weight:bold">${st.pts}</td><td style="font-size:0.8rem;color:#888">${tot>0?Math.round((st.w/tot)*100):0}%</td><td>${st.legsFor}</td><td>${st.legsAg}</td><td>${st.legsFor-st.legsAg}</td></tr>`;
         }).join('');
 
         const dSorted = Object.keys(d.dStats).sort((a,b) => d.dStats[b].pts - d.dStats[a].pts);
         document.getElementById('duo-body').innerHTML = dSorted.map((t,i) => {
             const st = d.dStats[t]; const tot = st.w + st.l;
-            return `<tr><td>${i+1}</td><td style="font-size:0.85rem">${t}</td><td style="color:var(--neon-pink);font-weight:bold">${st.pts}</td><td style="font-size:0.8rem;color:#aaa">${tot>0?Math.round((st.w/tot)*100):0}%</td><td>${st.legsFor}</td><td>${st.legsAg}</td><td>${st.legsFor-st.legsAg}</td></tr>`;
+            return `<tr><td>${i+1}</td><td style="font-size:0.85rem">${t}</td><td style="color:var(--neon-blue);font-weight:bold">${st.pts}</td><td style="font-size:0.8rem;color:#888">${tot>0?Math.round((st.w/tot)*100):0}%</td><td>${st.legsFor}</td><td>${st.legsAg}</td><td>${st.legsFor-st.legsAg}</td></tr>`;
         }).join('');
 
         const h2hBody = document.getElementById('h2h-body-content'); h2hBody.innerHTML = '';
         Object.values(d.h2h).forEach(m => {
             const tot = m.t1Wins + m.t2Wins; if(tot===0)return;
             const p1 = Math.round((m.t1Wins/tot)*100);
-            h2hBody.innerHTML += `<tr><td style="text-align:right;font-size:0.8rem"><span style="color:var(--neon-blue)">${m.t1}</span> <b style="font-size:1.1rem;margin-left:5px">${m.t1Wins}</b></td><td style="padding:0 15px"><div style="display:flex;height:6px;width:100%;background:#333;border-radius:3px;overflow:hidden"><div style="width:${p1}%;background:var(--neon-blue)"></div><div style="flex-grow:1;background:var(--neon-pink)"></div></div></td><td style="text-align:left;font-size:0.8rem"><b style="font-size:1.1rem;margin-right:5px">${m.t2Wins}</b> <span style="color:var(--neon-pink)">${m.t2}</span></td></tr>`;
+            h2hBody.innerHTML += `<tr><td style="text-align:right;font-size:0.8rem"><span style="color:var(--st-red)">${m.t1}</span> <b style="font-size:1.1rem;margin-left:5px">${m.t1Wins}</b></td><td style="padding:0 15px"><div style="display:flex;height:8px;width:100%;background:#222;border:1px solid #444;"><div style="width:${p1}%;background:var(--st-red)"></div><div style="flex-grow:1;background:var(--neon-blue)"></div></div></td><td style="text-align:left;font-size:0.8rem"><b style="font-size:1.1rem;margin-right:5px">${m.t2Wins}</b> <span style="color:var(--neon-blue)">${m.t2}</span></td></tr>`;
         });
 
         // HOF
-        document.getElementById('hof-title').innerText = s === 'all' ? "Hall of Fame (All Time)" : `Hall of Fame (${s})`;
+        document.getElementById('hof-title').innerText = scope === 'all' ? "HALL OF FAME (ALL TIME)" : `HALL OF FAME (${scope})`;
         const fill = (id, arr, fmt) => {
             const el = document.getElementById(id);
-            if(arr.length===0) el.innerHTML = '<li style="text-align:center;color:#555;padding:10px;">Geen data</li>';
-            else el.innerHTML = arr.slice(0,4).map((x,i)=>`<li class="hof-item"><span class="hof-rank" style="color:${i===0?'#ffd700':i===1?'#e0e0e0':'#cd7f32'}">${i+1}.</span>${fmt(x)}</li>`).join('');
+            if(arr.length===0) el.innerHTML = '<li style="text-align:center;color:#444;padding:10px;">GEEN DATA</li>';
+            else el.innerHTML = arr.slice(0,4).map((x,i)=>`<li class="hof-item"><span class="hof-rank" style="color:${i===0?'#ffcc00':i===1?'#aaa':'#cd7f32'}">${i+1}.</span>${fmt(x)}</li>`).join('');
         };
-        fill('list-streaks', d.streaks.sort((a,b)=>b.count-a.count), i=>`<span class="hof-name">${i.name}</span> <span class="hof-val">${i.count}</span>`);
-        fill('list-loss-streaks', d.lossStreaks.sort((a,b)=>b.count-a.count), i=>`<span class="hof-name">${i.name}</span> <span class="hof-val">${i.count}</span>`);
-        fill('list-bigwins', d.bigWins.sort((a,b)=>b.diff-a.diff), i=>`<span class="hof-name" style="font-size:0.8rem">${i.text}</span> <span class="hof-val">${i.score}</span>`);
-        fill('list-thrillers', d.bigWins.filter(m=>m.diff>0).sort((a,b)=>a.diff-b.diff), i=>`<span class="hof-name" style="font-size:0.8rem">${i.text}</span> <span class="hof-val">${i.score}</span>`);
+        fill('list-streaks', d.streaks.sort((a,b)=>b.count-a.count), i=>`<span class="hof-val">${i.name}</span> <span class="hof-val" style="color:#fff">${i.count}</span>`);
+        fill('list-loss-streaks', d.lossStreaks.sort((a,b)=>b.count-a.count), i=>`<span class="hof-val">${i.name}</span> <span class="hof-val" style="color:#fff">${i.count}</span>`);
+        fill('list-bigwins', d.bigWins.sort((a,b)=>b.diff-a.diff), i=>`<span class="hof-val" style="font-size:0.75rem">${i.text}</span> <span class="hof-val" style="color:#fff">${i.score}</span>`);
+        fill('list-thrillers', d.bigWins.filter(m=>m.diff>0).sort((a,b)=>a.diff-b.diff), i=>`<span class="hof-val" style="font-size:0.75rem">${i.text}</span> <span class="hof-val" style="color:#fff">${i.score}</span>`);
         
         let bagels = Object.keys(d.pStats).map(p=>({name:p, count:d.pStats[p].bagels})).filter(x=>x.count>0).sort((a,b)=>b.count-a.count);
-        fill('list-bagels', bagels, i=>`<span class="hof-name">${i.name}</span> <span class="hof-val">${i.count}</span>`);
+        fill('list-bagels', bagels, i=>`<span class="hof-val">${i.name}</span> <span class="hof-val" style="color:#fff">${i.count}</span>`);
 
         // CHART
         const ctx = document.getElementById('pointsChart').getContext('2d');
         if(window.myChart) window.myChart.destroy();
         const datasets = Object.keys(d.chart).filter(k=>k!=='labels').map(p=>({
-            label: p, data: d.chart[p], borderColor: p==="Jorden"?"#00ffff":p==="Yarni"?"#ff00ff":p==="Lars"?"#ffd700":p==="Vince"?"#c0ff00":"#fff", tension: 0.3
+            label: p, data: d.chart[p], borderColor: p==="Jorden"?"#ff1515":p==="Yarni"?"#0088ff":p==="Lars"?"#ffcc00":p==="Vince"?"#00ff00":"#fff", borderWidth: 2, pointBackgroundColor: '#000', tension: 0.2
         }));
-        window.myChart = new Chart(ctx, { type: 'line', data: { labels: d.chart.labels, datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: 'white' } } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'white' } }, x: { display: false } } } });
+        window.myChart = new Chart(ctx, { type: 'line', data: { labels: d.chart.labels, datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#ccc', font: { family: 'Share Tech Mono' } } } }, scales: { y: { grid: { color: '#333' }, ticks: { color: '#888' } }, x: { display: false } } } });
 
         // MATCHES
         const cont = document.getElementById('matches-container'); cont.innerHTML = '';
         const played = d.matches.filter(m=>m.isPlayed).reverse();
         const future = d.matches.filter(m=>!m.isPlayed);
         
-        const card = (m) => `<div class="match-card ${!m.isPlayed?'future':''}"><div style="display:flex;align-items:center"><div><span class="date-small">${m.date}</span><span class="day-badge">${m.day}</span></div><div style="display:flex;flex-direction:column;margin-left:10px"><span style="color:var(--neon-blue);font-size:0.9rem">${m.t1}</span></div></div>${m.isPlayed?`<span class="score-display">${m.s1} - ${m.s2}</span>`:`<span class="score-display" style="background:none;color:#777;font-size:0.8rem">Gepland</span>`}<div style="text-align:right"><span style="color:var(--neon-pink);font-size:0.9rem">${m.t2}</span></div></div>`;
+        const card = (m) => `<div class="match-card ${!m.isPlayed?'future':''}"><div style="display:flex;align-items:center"><div><span class="date-small">${m.date}</span><span class="day-badge">${m.day}</span></div><div style="display:flex;flex-direction:column;margin-left:10px"><span style="color:var(--st-red);font-size:0.9rem;font-weight:bold">${m.t1}</span></div></div>${m.isPlayed?`<span class="score-display">${m.s1} - ${m.s2}</span>`:`<span class="score-display" style="background:none;color:#555;font-size:0.8rem">VS</span>`}<div style="text-align:right"><span style="color:var(--neon-blue);font-size:0.9rem;font-weight:bold">${m.t2}</span></div></div>`;
         
-        if(played.length>0) { cont.innerHTML+=`<div class="match-section-title">Recente Uitslagen</div>`; played.forEach(m=>cont.innerHTML+=card(m)); }
-        if(future.length>0) { cont.innerHTML+=`<div class="match-section-title">Programma</div>`; future.forEach(m=>cont.innerHTML+=card(m)); }
-        if(played.length===0 && future.length===0) cont.innerHTML = '<div style="text-align:center;color:#666">Geen wedstrijden</div>';
+        if(played.length>0) { cont.innerHTML+=`<div class="match-section-title">RECENTE UITSLAGEN</div>`; played.forEach(m=>cont.innerHTML+=card(m)); }
+        if(future.length>0) { cont.innerHTML+=`<div class="match-section-title">PROGRAMMA</div>`; future.forEach(m=>cont.innerHTML+=card(m)); }
+        if(played.length===0 && future.length===0) cont.innerHTML = '<div style="text-align:center;color:#444">GEEN DATA GEVONDEN IN HET ARCHIEF</div>';
     }
 
     fetchData();
