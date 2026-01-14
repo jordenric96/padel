@@ -42,6 +42,7 @@
             text-align: center;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
             position: relative;
+            min-width: 150px;
         }
         .champion-card::before { content: '👑'; font-size: 1.5rem; display: block; margin-bottom: 5px; }
         .champion-year { color: var(--accent-gold); font-weight: bold; font-size: 0.9rem; text-transform: uppercase; }
@@ -104,7 +105,7 @@
 <div class="container">
     <h1>Padel Competitie Ricour - Hemmeryckx</h1>
     
-    <div id="loading" class="loading">Data laden en seizoenen berekenen...</div>
+    <div id="loading" class="loading">Data laden en verwerken...</div>
 
     <div id="dashboard" style="display:none;">
         
@@ -169,7 +170,7 @@
         </div>
 
         <div class="table-container">
-            <h3 style="color: var(--accent-gold); text-align: center;">Head-to-Head (Huidig Jaar)</h3>
+            <h3 style="color: var(--accent-gold); text-align: center;">Head-to-Head</h3>
             <table>
                 <thead>
                     <tr>
@@ -192,21 +193,22 @@
 <script>
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOWlUbVIA7AVW_vM2uN9DU86vEPKm_2GatKYh_50s0wXnY_K9rETMBddyn6vdWgcYzK6WNJ4Xp1TUi/pub?output=csv";
 
-    // Globale variabelen om data op te slaan per jaar
-    let yearlyData = {}; // Structuur: { '2025': { pStats: {}, dStats: {}, h2h: {} }, '2026': ... }
-    let allTimeData = { pStats: {}, dStats: {}, h2h: {} }; // Alles samen
+    // Globale variabelen
+    let yearlyData = {}; 
+    let allTimeData = { pStats: {}, dStats: {}, h2hStats: {} };
     let availableYears = [];
-    let currentYearSelection = 'all'; // Default
     const playerNames = ["Jorden", "Yarni", "Lars", "Vince"];
 
     async function fetchData() {
+        const loadingEl = document.getElementById('loading');
         try {
             const response = await fetch(SHEET_URL);
+            if (!response.ok) throw new Error("Kon sheet niet ophalen");
             const data = await response.text();
             processCSV(data);
         } catch (error) {
             console.error(error);
-            document.getElementById('loading').innerHTML = "Fout bij laden. Check je internetverbinding en sheet URL.";
+            loadingEl.innerHTML = "Fout bij laden. Check of de sheet gepubliceerd is als CSV.";
         }
     }
 
@@ -220,195 +222,184 @@
     }
 
     function processCSV(csvText) {
-        const rows = csvText.split('\n').slice(1);
-        
-        // --- 1. SETUP GLOBALE STATS ---
-        // Fun stuff (Hall of Fame) is altijd All Time
-        let allStreaks = []; 
-        let allLossStreaks = []; 
-        let allMatchesDetailed = []; 
-        let matchesHistory = [];
-
-        // Chart Data (All Time)
-        let pointsOverTime = { "Jorden": [0], "Yarni": [0], "Lars": [0], "Vince": [0] };
-        let daysLabels = ["Start"];
-        
-        // Hulp variabele voor chart
-        let chartDayTracker = null;
-
-        rows.forEach(row => {
-            const cols = row.split(',');
-            if (cols.length < 7) return; // Check of we genoeg kolommen hebben (Datum toegevoegd)
-
-            // Parsing kolommen (Nieuwe volgorde!)
-            const dateStr = cols[0].trim(); // Datum kolom A
-            const dayNum = cols[1].trim();  // Dag nummer
-            // cols[2] is tijd, negeren we
-            const t1Name = cols[3].trim();
-            const t2Name = cols[4].trim();
-            const s1 = parseInt(cols[5]);
-            const s2 = parseInt(cols[6]);
-
-            if (isNaN(s1) || isNaN(s2)) return;
-
-            // Bepaal het JAAR
-            let matchYear = "Onbekend";
-            if (dateStr.includes('/')) matchYear = dateStr.split('/')[2]; // dd/mm/yyyy
-            else if (dateStr.includes('-')) matchYear = dateStr.split('-')[0]; // yyyy-mm-dd
-            if (matchYear.length !== 4) matchYear = "Onbekend"; // Fallback
-
-            // Maak containers voor dit jaar als ze nog niet bestaan
-            if (!yearlyData[matchYear]) {
-                yearlyData[matchYear] = { 
-                    pStats: initStatsObject(), 
-                    dStats: {}, 
-                    h2hStats: {} 
-                };
-                availableYears.push(matchYear);
-            }
-            // Zorg dat 'all' container bestaat (deze was hierboven al gedeclareerd maar stats nog niet)
-            if (Object.keys(allTimeData.pStats).length === 0) allTimeData.pStats = initStatsObject();
-
-            // --- DATA VERWERKING ---
+        try {
+            const rows = csvText.split('\n').slice(1); // Header overslaan
             
-            // 1. Chart Logic (All time)
-            if (dateStr !== chartDayTracker) {
-                chartDayTracker = dateStr;
-                daysLabels.push(dateStr); // Of "Dag " + dayNum
-                playerNames.forEach(p => pointsOverTime[p].push(pointsOverTime[p][pointsOverTime[p].length-1]));
-            }
-            const chartIdx = pointsOverTime["Jorden"].length - 1;
+            // Initialiseer All Time
+            if (!allTimeData.h2hStats) allTimeData.h2hStats = {};
+            if (!allTimeData.pStats || Object.keys(allTimeData.pStats).length === 0) allTimeData.pStats = initStatsObject();
 
-            matchesHistory.push({ date: dateStr, day: dayNum, t1Name, t2Name, s1, s2 });
+            let allStreaks = []; 
+            let allLossStreaks = []; 
+            let allMatchesDetailed = []; 
+            let matchesHistory = [];
 
-            const diff = Math.abs(s1 - s2);
-            let winners = [], losers = [];
-            let matchText = ""; 
-            const t1Players = t1Name.split(' & ');
-            const t2Players = t2Name.split(' & ');
+            // Chart Data
+            let pointsOverTime = { "Jorden": [0], "Yarni": [0], "Lars": [0], "Vince": [0] };
+            let daysLabels = ["Start"];
+            let chartDayTracker = null;
 
-            if (s1 > s2) {
-                winners = t1Players; losers = t2Players;
-                matchText = `${t1Name} vs ${t2Name}`;
-            } else {
-                winners = t2Players; losers = t1Players;
-                matchText = `${t2Name} vs ${t1Name}`; 
-            }
+            rows.forEach((row) => {
+                if (!row.trim()) return;
 
-            // Update Stats (Function to update a specific stats object)
-            const updateStatsObj = (scopeStats) => {
-                // Duo Init
-                if (!scopeStats.dStats[t1Name]) scopeStats.dStats[t1Name] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0, played: 0 };
-                if (!scopeStats.dStats[t2Name]) scopeStats.dStats[t2Name] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0, played: 0 };
+                // 1. SCHEIDINGSTEKEN DETECTIE (Komma of Puntkomma)
+                const delimiter = row.includes(';') ? ';' : ',';
+                const cols = row.split(delimiter);
                 
-                // Legs Duo
-                scopeStats.dStats[t1Name].played++; scopeStats.dStats[t2Name].played++;
-                scopeStats.dStats[t1Name].legsFor += s1; scopeStats.dStats[t1Name].legsAg += s2;
-                scopeStats.dStats[t2Name].legsFor += s2; scopeStats.dStats[t2Name].legsAg += s1;
+                // MAPPING OP BASIS VAN JOUW DATA:
+                // 0: Datum, 1: Speeldag, 2: Wedstrijd, 3: Team 1, 4: Team 2, 5: Score 1, 6: Score 2
+                if (cols.length < 5) return; 
+
+                const dateStr = cols[0].trim(); 
+                const dayNum = cols[1].trim();
+                const t1Name = cols[3].trim(); // Kolom D
+                const t2Name = cols[4].trim(); // Kolom E
                 
-                // Legs Individual
-                t1Players.forEach(p => { scopeStats.pStats[p].legsFor += s1; scopeStats.pStats[p].legsAg += s2; });
-                t2Players.forEach(p => { scopeStats.pStats[p].legsFor += s2; scopeStats.pStats[p].legsAg += s1; });
+                // Scores veilig parsen (kunnen leeg zijn bij toekomstige matchen)
+                const s1Str = cols[5] ? cols[5].trim() : "";
+                const s2Str = cols[6] ? cols[6].trim() : "";
+                const s1 = parseInt(s1Str);
+                const s2 = parseInt(s2Str);
+                
+                // Check of wedstrijd gespeeld is
+                const isPlayed = !isNaN(s1) && !isNaN(s2);
 
-                // Win/Loss Points
+                // JAAR BEPALEN
+                let matchYear = "2025"; 
+                if (dateStr.includes('/')) matchYear = dateStr.split('/')[2];
+                else if (dateStr.includes('-')) matchYear = dateStr.split('-')[0];
+                matchYear = matchYear.substring(0, 4);
+
+                // Container maken indien nodig
+                if (!yearlyData[matchYear]) {
+                    yearlyData[matchYear] = { pStats: initStatsObject(), dStats: {}, h2hStats: {} };
+                    availableYears.push(matchYear);
+                }
+
+                // Match toevoegen aan geschiedenis (ook als hij nog niet gespeeld is)
+                matchesHistory.push({ 
+                    date: dateStr, day: dayNum, t1Name, t2Name, s1, s2, isPlayed 
+                });
+
+                // --- ALS WEDSTRIJD NOG NIET GESPEELD IS, STOP HIER VOOR DEZE REGEL ---
+                if (!isPlayed) return;
+
+                // Vanaf hier: statistieken verwerken voor gespeelde wedstrijden
+                
+                // Chart Logic
+                if (dateStr !== chartDayTracker) {
+                    chartDayTracker = dateStr;
+                    daysLabels.push(dayNum); 
+                    playerNames.forEach(p => pointsOverTime[p].push(pointsOverTime[p][pointsOverTime[p].length-1]));
+                }
+                const chartIdx = pointsOverTime["Jorden"].length - 1;
+
+                const diff = Math.abs(s1 - s2);
+                let winners = [], losers = [];
+                let matchText = ""; 
+                const t1Players = t1Name.split(' & ');
+                const t2Players = t2Name.split(' & ');
+
                 if (s1 > s2) {
-                    scopeStats.dStats[t1Name].w++; scopeStats.dStats[t1Name].pts += diff; scopeStats.dStats[t2Name].l++;
-                    winners.forEach(p => { scopeStats.pStats[p].w++; scopeStats.pStats[p].pts += diff; });
-                    losers.forEach(p => { scopeStats.pStats[p].l++; });
+                    winners = t1Players; losers = t2Players;
+                    matchText = `${t1Name} vs ${t2Name}`;
                 } else {
-                    scopeStats.dStats[t2Name].w++; scopeStats.dStats[t2Name].pts += diff; scopeStats.dStats[t1Name].l++;
-                    winners.forEach(p => { scopeStats.pStats[p].w++; scopeStats.pStats[p].pts += diff; });
-                    losers.forEach(p => { scopeStats.pStats[p].l++; });
+                    winners = t2Players; losers = t1Players;
+                    matchText = `${t2Name} vs ${t1Name}`; 
                 }
 
-                // H2H Logic
-                let pairingKey = [t1Name, t2Name].sort().join("|||");
-                if (!scopeStats.h2hStats[pairingKey]) {
-                    scopeStats.h2hStats[pairingKey] = { t1: t1Name, t2: t2Name, t1Wins: 0, t2Wins: 0 };
-                    if (pairingKey.startsWith(t2Name)) { scopeStats.h2hStats[pairingKey].t1 = t2Name; scopeStats.h2hStats[pairingKey].t2 = t1Name; }
-                }
-                let cm = scopeStats.h2hStats[pairingKey];
-                if (s1 > s2) {
-                    if (t1Name === cm.t1) cm.t1Wins++; else cm.t2Wins++;
-                } else {
-                    if (t1Name === cm.t1) cm.t2Wins++; else cm.t1Wins++;
-                }
-            };
+                // Update Stats Functie
+                const updateStatsObj = (scopeStats) => {
+                    // Duo stats init
+                    if (!scopeStats.dStats[t1Name]) scopeStats.dStats[t1Name] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0, played: 0 };
+                    if (!scopeStats.dStats[t2Name]) scopeStats.dStats[t2Name] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0, played: 0 };
+                    
+                    scopeStats.dStats[t1Name].played++; scopeStats.dStats[t2Name].played++;
+                    scopeStats.dStats[t1Name].legsFor += s1; scopeStats.dStats[t1Name].legsAg += s2;
+                    scopeStats.dStats[t2Name].legsFor += s2; scopeStats.dStats[t2Name].legsAg += s1;
+                    
+                    t1Players.forEach(p => { scopeStats.pStats[p].legsFor += s1; scopeStats.pStats[p].legsAg += s2; });
+                    t2Players.forEach(p => { scopeStats.pStats[p].legsFor += s2; scopeStats.pStats[p].legsAg += s1; });
 
-            // UPDATE YEARLY AND ALL TIME
-            updateStatsObj(yearlyData[matchYear]);
-            updateStatsObj(allTimeData);
+                    if (s1 > s2) {
+                        scopeStats.dStats[t1Name].w++; scopeStats.dStats[t1Name].pts += diff; scopeStats.dStats[t2Name].l++;
+                        winners.forEach(p => { scopeStats.pStats[p].w++; scopeStats.pStats[p].pts += diff; });
+                        losers.forEach(p => { scopeStats.pStats[p].l++; });
+                    } else {
+                        scopeStats.dStats[t2Name].w++; scopeStats.dStats[t2Name].pts += diff; scopeStats.dStats[t1Name].l++;
+                        winners.forEach(p => { scopeStats.pStats[p].w++; scopeStats.pStats[p].pts += diff; });
+                        losers.forEach(p => { scopeStats.pStats[p].l++; });
+                    }
 
-            // --- HALL OF FAME SPECIFIC (ALL TIME ONLY) ---
-            allMatchesDetailed.push({
-                diff: diff,
-                text: matchText.replace(' & ', '&').replace(' & ', '&'), 
-                score: (s1 > s2) ? `${s1}-${s2}` : `${s2}-${s1}`
+                    // H2H Logic
+                    let pairingKey = [t1Name, t2Name].sort().join("|||");
+                    if (!scopeStats.h2hStats) scopeStats.h2hStats = {};
+                    if (!scopeStats.h2hStats[pairingKey]) {
+                        scopeStats.h2hStats[pairingKey] = { t1: t1Name, t2: t2Name, t1Wins: 0, t2Wins: 0 };
+                        if (pairingKey.startsWith(t2Name)) { scopeStats.h2hStats[pairingKey].t1 = t2Name; scopeStats.h2hStats[pairingKey].t2 = t1Name; }
+                    }
+                    let cm = scopeStats.h2hStats[pairingKey];
+                    if (s1 > s2) {
+                        if (t1Name === cm.t1) cm.t1Wins++; else cm.t2Wins++;
+                    } else {
+                        if (t1Name === cm.t1) cm.t2Wins++; else cm.t1Wins++;
+                    }
+                };
+
+                updateStatsObj(yearlyData[matchYear]);
+                updateStatsObj(allTimeData);
+
+                // Hall of Fame
+                allMatchesDetailed.push({
+                    diff: diff,
+                    text: matchText.replace(/ & /g, '&'), 
+                    score: (s1 > s2) ? `${s1}-${s2}` : `${s2}-${s1}`
+                });
+
+                if ((s2 === 0 && s1 > s2) || (s1 === 0 && s2 > s1)) {
+                    winners.forEach(p => allTimeData.pStats[p].bagels++);
+                }
+
+                winners.forEach(p => pointsOverTime[p][chartIdx] += diff);
+
+                // Streaks
+                winners.forEach(p => {
+                    allTimeData.pStats[p].currentStreak++;
+                    if (allTimeData.pStats[p].currentLossStreak > 1) allLossStreaks.push({ name: p, count: allTimeData.pStats[p].currentLossStreak });
+                    allTimeData.pStats[p].currentLossStreak = 0;
+                });
+                losers.forEach(p => {
+                    allTimeData.pStats[p].currentLossStreak++;
+                    if (allTimeData.pStats[p].currentStreak > 1) allStreaks.push({ name: p, count: allTimeData.pStats[p].currentStreak });
+                    allTimeData.pStats[p].currentStreak = 0;
+                });
             });
 
-            // Bagels
-            if (s2 === 0 && s1 > s2) winners.forEach(p => allTimeData.pStats[p].bagels++);
-            if (s1 === 0 && s2 > s1) winners.forEach(p => allTimeData.pStats[p].bagels++);
-
-            // Chart Points Update
-            winners.forEach(p => pointsOverTime[p][chartIdx] += diff);
-
-            // Streaks calculation on All Time object for HOF
-            // (Using a temp property on allTimeData.pStats to track running streak)
-            winners.forEach(p => {
-                allTimeData.pStats[p].currentStreak++;
-                if (allTimeData.pStats[p].currentLossStreak > 1) {
-                    allLossStreaks.push({ name: p, count: allTimeData.pStats[p].currentLossStreak });
-                }
-                allTimeData.pStats[p].currentLossStreak = 0;
-            });
-            losers.forEach(p => {
-                allTimeData.pStats[p].currentLossStreak++;
-                if (allTimeData.pStats[p].currentStreak > 1) {
-                    allStreaks.push({ name: p, count: allTimeData.pStats[p].currentStreak });
-                }
-                allTimeData.pStats[p].currentStreak = 0;
+            // Flush streaks
+            playerNames.forEach(p => {
+                if (allTimeData.pStats[p].currentStreak > 1) allStreaks.push({ name: p, count: allTimeData.pStats[p].currentStreak });
+                if (allTimeData.pStats[p].currentLossStreak > 1) allLossStreaks.push({ name: p, count: allTimeData.pStats[p].currentLossStreak });
             });
 
-        }); // End Rows Loop
+            availableYears = [...new Set(availableYears)].sort().reverse();
+            
+            // RENDERING
+            setupYearSelector();
+            renderChampions(availableYears, yearlyData);
+            
+            // Zet de selectie standaard op het meest recente jaar dat data bevat, of 'all'
+            let defaultYear = availableYears[0] || 'all';
+            document.getElementById('yearSelect').value = defaultYear;
+            updateTables();
 
-        // Flush active streaks
-        playerNames.forEach(p => {
-            if (allTimeData.pStats[p].currentStreak > 1) allStreaks.push({ name: p, count: allTimeData.pStats[p].currentStreak });
-            if (allTimeData.pStats[p].currentLossStreak > 1) allLossStreaks.push({ name: p, count: allTimeData.pStats[p].currentLossStreak });
-        });
+            renderFunStats(allStreaks, allLossStreaks, allMatchesDetailed, allTimeData.pStats, playerNames);
+            renderChart(daysLabels, pointsOverTime);
+            renderHistory(matchesHistory);
 
-        // Sorteer beschikbare jaren en verwijder duplicaten
-        availableYears = [...new Set(availableYears)].sort().reverse(); // 2026, 2025...
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
 
-        // --- RENDER EVERYTHING ---
-        setupYearSelector();
-        renderChampions(availableYears, yearlyData);
-        
-        // Default render: most recent year or All Time? Let's do All Time first or Recent Year
-        // Let's default to the most recent year if available, otherwise all time
-        currentYearSelection = availableYears[0] || 'all';
-        document.getElementById('yearSelect').value = currentYearSelection;
-        updateTables(); // Renders main tables based on selection
-
-        renderFunStats(allStreaks, allLossStreaks, allMatchesDetailed, allTimeData.pStats, playerNames);
-        renderChart(daysLabels, pointsOverTime);
-        renderHistory(matchesHistory);
-
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-    }
-
-    function setupYearSelector() {
-        const sel = document.getElementById('yearSelect');
-        sel.innerHTML = '';
-        
-        // Add All Time Option
-        let optAll = document.createElement('option');
-        optAll.value = 'all';
-        optAll.text = 'Alles (All-time)';
-        sel.appendChild(optAll);
-
-        // Add Years
-        availableYears.forEach(y => {
-            let opt = document.createElement('opt
+        } catch (err) {
+            console.error(err);
+            document.getElementById('loading').innerHTML = `
+                <strong style="color:var(--neon-pink)">FOU
