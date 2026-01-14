@@ -29,7 +29,7 @@
 
         .container { max-width: 1200px; margin: 0 auto; }
 
-        /* FILTER BAR (Bovenaan) */
+        /* FILTER BAR */
         .top-bar {
             background: var(--card-bg); padding: 15px; border-radius: 10px; margin-bottom: 30px;
             display: flex; justify-content: center; align-items: center; gap: 15px;
@@ -49,7 +49,7 @@
         .champion-name { font-size: 1.4rem; font-weight: bold; color: #fff; margin-top: 5px; }
         .champion-pts { font-size: 0.8rem; color: var(--text-muted); }
 
-        /* GRIDS */
+        /* GRIDS & TABLES */
         .stats-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 30px; }
         .hall-of-fame-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
 
@@ -86,7 +86,7 @@
         .chart-container { background: var(--card-bg); border-radius: 10px; padding: 15px; margin-bottom: 30px; height: 300px; position: relative; }
         .loading { text-align: center; padding: 20px; color: var(--neon-blue); font-style: italic; }
         
-        #debug-log { background: #330000; color: #ffcccc; padding: 15px; border: 1px solid red; display: none; margin-bottom: 20px; }
+        #debug-log { background: #330000; color: #ffcccc; padding: 15px; border: 1px solid red; display: none; margin-bottom: 20px; white-space: pre-wrap; font-family: monospace; font-size:0.8rem;}
     </style>
 </head>
 <body>
@@ -172,15 +172,14 @@
         </div>
         
         <h2>Wedstrijden</h2>
-        <div id="matches-container">
-            </div>
+        <div id="matches-container"></div>
     </div>
 </div>
 
 <script>
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOWlUbVIA7AVW_vM2uN9DU86vEPKm_2GatKYh_50s0wXnY_K9rETMBddyn6vdWgcYzK6WNJ4Xp1TUi/pub?output=csv";
     
-    // De Database: Hierin slaan we alles op per jaar en totaal
+    // Database Storage
     let db = {
         'all': { pStats: {}, dStats: {}, h2h: {}, matches: [], streaks: [], lossStreaks: [], bigWins: [], chart: {} }
     };
@@ -189,7 +188,8 @@
 
     function logError(msg) {
         document.getElementById('debug-log').style.display = 'block';
-        document.getElementById('debug-log').innerText += msg + "\n";
+        document.getElementById('debug-log').innerText += "FOUT: " + msg + "\n";
+        document.getElementById('loading').innerText = "Er is een fout opgetreden. Zie details hierboven.";
     }
 
     async function fetchData() {
@@ -199,20 +199,27 @@
             const data = await response.text();
             processCSV(data);
         } catch (error) {
-            logError("Fout bij ophalen data: " + error.message);
+            logError(error.message);
         }
     }
 
     function initScope(scopeName) {
         if (!db[scopeName]) {
+            // Maak dynamisch de chart structuur aan op basis van speler namen
+            let chartObj = { labels: ["Start"] };
+            playerNames.forEach(p => chartObj[p] = [0]);
+
             db[scopeName] = {
                 pStats: {}, dStats: {}, h2h: {}, matches: [],
                 streaks: [], lossStreaks: [], bigWins: [],
-                chart: { "Jorden": [0], "Yarni": [0], "Lars": [0], "Vince": [0], labels: ["Start"] }
+                chart: chartObj
             };
+            
+            // Init stats voor elke speler
             playerNames.forEach(p => {
                 db[scopeName].pStats[p] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0, bagels: 0, currentStreak: 0, currentLossStreak: 0 };
             });
+
             if (scopeName !== 'all') availableYears.push(scopeName);
         }
     }
@@ -220,10 +227,11 @@
     function processCSV(csvText) {
         try {
             const rows = csvText.split('\n');
+            // Detect delimiter op eerste lijn
             const delimiter = rows[0].includes(';') ? ';' : ',';
             const headers = rows[0].split(delimiter).map(h => h.trim().toLowerCase());
 
-            // Kolom indexen vinden
+            // Slimme Kolom Indexen
             const idxDate = headers.findIndex(h => h.includes('datum'));
             const idxDay = headers.findIndex(h => h.includes('dag') || h.includes('speeldag'));
             const idxT1 = headers.findIndex(h => h.includes('team 1') || h.includes('team1'));
@@ -231,7 +239,7 @@
             const idxS1 = headers.findIndex(h => h.includes('score team 1') || h.includes('score 1'));
             const idxS2 = headers.findIndex(h => h.includes('score team 2') || h.includes('score 2'));
 
-            if (idxDate === -1 || idxT1 === -1 || idxS1 === -1) throw new Error("Kolommen niet gevonden in CSV.");
+            if (idxDate === -1 || idxT1 === -1 || idxS1 === -1) throw new Error("Kolommen niet gevonden. Check headers in sheet.");
 
             initScope('all');
 
@@ -243,11 +251,13 @@
                 const dayNum = cols[idxDay] ? cols[idxDay].trim() : "";
                 const t1Name = cols[idxT1] ? cols[idxT1].trim() : "";
                 const t2Name = cols[idxT2] ? cols[idxT2].trim() : "";
-                const s1 = parseInt(cols[idxS1]);
-                const s2 = parseInt(cols[idxS2]);
+                
+                // Veilig getallen parsen
+                const s1 = parseInt(cols[idxS1] ? cols[idxS1].trim() : "NaN");
+                const s2 = parseInt(cols[idxS2] ? cols[idxS2].trim() : "NaN");
                 const isPlayed = !isNaN(s1) && !isNaN(s2);
 
-                // Jaar bepalen
+                // Jaar bepalen (Fallback naar 2025)
                 let year = "2025";
                 if (dateStr.includes('/')) year = dateStr.split('/')[2];
                 else if (dateStr.includes('-')) year = dateStr.split('-')[0];
@@ -256,46 +266,60 @@
                 initScope(year);
 
                 const matchObj = { date: dateStr, day: dayNum, t1: t1Name, t2: t2Name, s1, s2, isPlayed, year };
-                
-                // Voeg toe aan lijsten (zowel jaar als all-time)
                 db[year].matches.push(matchObj);
                 db['all'].matches.push(matchObj);
 
                 if (!isPlayed) continue;
 
-                // --- VERWERK STATISTIEKEN ---
+                // --- STATS UPDATE LOGIC ---
                 const diff = Math.abs(s1 - s2);
-                let winners = [], losers = [];
-                let matchText = "";
                 const t1Players = t1Name.split('&').map(s => s.trim());
                 const t2Players = t2Name.split('&').map(s => s.trim());
+                let winners = [], losers = [];
 
-                if (s1 > s2) { winners = t1Players; losers = t2Players; matchText = `${t1Name} vs ${t2Name}`; }
-                else { winners = t2Players; losers = t1Players; matchText = `${t2Name} vs ${t1Name}`; }
+                if (s1 > s2) { winners = t1Players; losers = t2Players; } 
+                else { winners = t2Players; losers = t1Players; }
+                
                 const scoreText = (s1 > s2) ? `${s1}-${s2}` : `${s2}-${s1}`;
+                const matchText = (s1 > s2) ? `${t1Name} vs ${t2Name}` : `${t2Name} vs ${t1Name}`;
 
-                // Hulpfunctie om stats bij te werken voor een specifieke scope (jaar of all)
+                // Functie om Scope (Jaar of All Time) bij te werken
                 const updateScopeStats = (scope) => {
                     const d = db[scope];
-                    
-                    // Chart Labels
+                    if (!d) return; 
+
+                    // 1. Chart Data Update (VEILIG)
+                    // Check of deze dag al bestaat in labels, zo niet, voeg toe en kopieer vorige waarde voor iedereen
                     if (d.chart.labels[d.chart.labels.length - 1] !== dayNum) {
                         d.chart.labels.push(dayNum);
-                        playerNames.forEach(p => d.chart[p].push(d.chart[p][d.chart[p].length - 1]));
+                        playerNames.forEach(p => {
+                            if (d.chart[p]) {
+                                const lastVal = d.chart[p].length > 0 ? d.chart[p][d.chart[p].length - 1] : 0;
+                                d.chart[p].push(lastVal);
+                            }
+                        });
                     }
-                    const chartIdx = d.chart["Jorden"].length - 1;
+                    // Bepaal de huidige index (laatste positie)
+                    const refPlayer = playerNames[0]; 
+                    if (!d.chart[refPlayer]) return; // Safety check
+                    const chartIdx = d.chart[refPlayer].length - 1;
 
-                    // Init Duo
+                    // Update punten in grafiek
+                    winners.forEach(p => { if(d.chart[p]) d.chart[p][chartIdx] += diff; });
+
+
+                    // 2. Duo Stats
                     if (!d.dStats[t1Name]) d.dStats[t1Name] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0 };
                     if (!d.dStats[t2Name]) d.dStats[t2Name] = { pts: 0, w: 0, l: 0, legsFor: 0, legsAg: 0 };
 
-                    // Legs Individual & Duo
                     d.dStats[t1Name].legsFor += s1; d.dStats[t1Name].legsAg += s2;
                     d.dStats[t2Name].legsFor += s2; d.dStats[t2Name].legsAg += s1;
+
+                    // 3. Player Stats (Legs)
                     t1Players.forEach(p => { if(d.pStats[p]){ d.pStats[p].legsFor += s1; d.pStats[p].legsAg += s2; }});
                     t2Players.forEach(p => { if(d.pStats[p]){ d.pStats[p].legsFor += s2; d.pStats[p].legsAg += s1; }});
 
-                    // Points & Win/Loss
+                    // 4. Points & W/L
                     if (s1 > s2) {
                         d.dStats[t1Name].w++; d.dStats[t1Name].pts += diff; d.dStats[t2Name].l++;
                         winners.forEach(p => { if(d.pStats[p]){ d.pStats[p].w++; d.pStats[p].pts += diff; }});
@@ -306,7 +330,7 @@
                         losers.forEach(p => { if(d.pStats[p]) d.pStats[p].l++; });
                     }
 
-                    // H2H
+                    // 5. Head-to-Head
                     let key = [t1Name, t2Name].sort().join("|||");
                     if (!d.h2h[key]) {
                         d.h2h[key] = { t1: t1Name, t2: t2Name, t1Wins: 0, t2Wins: 0 };
@@ -315,18 +339,13 @@
                     if (s1 > s2) { (t1Name === d.h2h[key].t1) ? d.h2h[key].t1Wins++ : d.h2h[key].t2Wins++; }
                     else { (t1Name === d.h2h[key].t1) ? d.h2h[key].t2Wins++ : d.h2h[key].t1Wins++; }
 
-                    // HOF - Bagels
+                    // 6. Hall of Fame - Items
                     if ((s2 === 0 && s1 > s2) || (s1 === 0 && s2 > s1)) {
                         winners.forEach(p => { if(d.pStats[p]) d.pStats[p].bagels++; });
                     }
-                    
-                    // HOF - Matches Detailed (for Thrillers/Big Wins)
                     d.bigWins.push({ diff: diff, text: matchText.replace(/&/g, '&'), score: scoreText });
 
-                    // Chart Data
-                    winners.forEach(p => { if(d.chart[p]) d.chart[p][chartIdx] += diff; });
-
-                    // Streaks Logic (Specific to this scope!)
+                    // 7. Streaks
                     winners.forEach(p => {
                         if(!d.pStats[p]) return;
                         d.pStats[p].currentStreak++;
@@ -345,7 +364,7 @@
                 updateScopeStats('all');
             }
 
-            // Flush remaining streaks for all scopes
+            // Flush remaining streaks
             Object.keys(db).forEach(scope => {
                 playerNames.forEach(p => {
                     const stats = db[scope].pStats[p];
@@ -354,12 +373,13 @@
                 });
             });
 
+            // UI Opzetten
             availableYears = [...new Set(availableYears)].sort().reverse();
             setupControls();
             
-            // Standaard selectie logica: 2026 als het bestaat, anders recentste
-            let defaultYear = availableYears.includes("2026") ? "2026" : availableYears[0];
-            document.getElementById('yearSelect').value = defaultYear || 'all';
+            // Standaard selectie: 2026 als het bestaat, anders recentste
+            let defaultYear = availableYears.includes("2026") ? "2026" : (availableYears[0] || 'all');
+            document.getElementById('yearSelect').value = defaultYear;
             
             renderChampions();
             renderDashboard();
@@ -368,7 +388,7 @@
             document.getElementById('dashboard').style.display = 'block';
 
         } catch (err) {
-            logError("Verwerkingsfout: " + err.message);
+            logError("Verwerkingsfout: " + err.message + "\nStack: " + err.stack);
             console.error(err);
         }
     }
@@ -391,7 +411,7 @@
         container.innerHTML = '';
         const currentYear = new Date().getFullYear().toString();
         availableYears.forEach(year => {
-            if (year === currentYear) return; // Geen kaart voor huidig jaar
+            if (year === currentYear) return; 
             const stats = db[year].pStats;
             const winner = Object.keys(stats).sort((a,b) => stats[b].pts - stats[a].pts)[0];
             if (!winner) return;
@@ -407,18 +427,19 @@
     function renderDashboard() {
         const scope = document.getElementById('yearSelect').value;
         const data = db[scope];
+        if(!data) return;
 
         // 1. Tables
         renderTables(data);
         
-        // 2. Hall of Fame (Nu gefilterd!)
+        // 2. Hall of Fame
         document.getElementById('hof-title').innerText = scope === 'all' ? "Hall of Fame (All Time)" : `Hall of Fame (${scope})`;
         renderHOF(data);
 
         // 3. Chart
         renderChart(data.chart);
 
-        // 4. Matches (Specifieke volgorde: Gespeeld -> Gepland)
+        // 4. Matches
         renderMatches(data.matches);
     }
 
@@ -463,7 +484,7 @@
         fillList('list-loss-streaks', data.lossStreaks.sort((a,b)=>b.count-a.count), i => `<span class="hof-name">${i.name}</span> <span class="hof-val">${i.count}</span>`);
         fillList('list-bigwins', data.bigWins.sort((a,b)=>b.diff-a.diff), i => `<span class="hof-name" style="font-size:0.8rem">${i.text}</span> <span class="hof-val">${i.score}</span>`);
         
-        let thrillers = data.bigWins.filter(m=>m.diff>0).sort((a,b)=>a.diff-b.diff); // Use bigWins source but sort asc
+        let thrillers = data.bigWins.filter(m=>m.diff>0).sort((a,b)=>a.diff-b.diff); 
         fillList('list-thrillers', thrillers, i => `<span class="hof-name" style="font-size:0.8rem">${i.text}</span> <span class="hof-val">${i.score}</span>`);
 
         let bagels = playerNames.map(p => ({ name: p, count: data.pStats[p].bagels })).filter(x => x.count > 0).sort((a,b) => b.count - a.count);
@@ -480,25 +501,22 @@
         const container = document.getElementById('matches-container');
         container.innerHTML = '';
 
-        // 1. Gespeelde wedstrijden (Recentste bovenaan)
-        // We proberen de datum te parsen voor sortering, anders fallback index
-        const played = matches.filter(m => m.isPlayed).reverse(); // Reverse want in CSV staat oudste eerst
-        
+        // 1. Gespeeld (Recentste eerst)
+        const played = matches.filter(m => m.isPlayed).reverse();
         if (played.length > 0) {
             container.innerHTML += `<div class="match-section-title">Recente Uitslagen</div>`;
             played.forEach(m => container.appendChild(createMatchCard(m)));
         }
 
-        // 2. Toekomstige wedstrijden (Eerstvolgende bovenaan)
+        // 2. Programma
         const future = matches.filter(m => !m.isPlayed);
-        
         if (future.length > 0) {
             container.innerHTML += `<div class="match-section-title">Programma</div>`;
             future.forEach(m => container.appendChild(createMatchCard(m)));
         }
 
         if (played.length === 0 && future.length === 0) {
-            container.innerHTML = '<div style="text-align:center; color:#666;">Geen wedstrijden gevonden voor deze periode.</div>';
+            container.innerHTML = '<div style="text-align:center; color:#666;">Geen wedstrijden.</div>';
         }
     }
 
@@ -527,6 +545,10 @@
     function renderChart(chartData) {
         const ctx = document.getElementById('pointsChart').getContext('2d');
         if(window.myChart) window.myChart.destroy();
+        
+        // Zorg dat we data hebben
+        if (!chartData || !chartData.labels) return;
+
         window.myChart = new Chart(ctx, {
             type: 'line',
             data: {
