@@ -9,16 +9,16 @@
     
     <style>
         :root {
-            --st-red: #ff1515; /* De iconische rode gloed */
+            --st-red: #ff1515;
             --st-glow: #ff9999;
-            --bg-color: #050510; /* Zeer donkerblauw/zwart */
+            --bg-color: #050510;
             --card-bg: #101018;
             --text-main: #e0e0e0;
             --text-muted: #888;
-            --neon-blue: #0088ff; /* Voor het 'Upside Down' contrast */
+            --neon-blue: #0088ff;
             --retro-gold: #ffcc00;
-            --font-title: 'Libre Baskerville', serif; /* Lijkt op Benguiat */
-            --font-data: 'Share Tech Mono', monospace; /* Jaren 80 computer */
+            --font-title: 'Libre Baskerville', serif;
+            --font-data: 'Share Tech Mono', monospace;
         }
 
         body {
@@ -31,6 +31,19 @@
             min-height: 100vh;
         }
 
+        /* --- AUDIO PLAYER BUTTON --- */
+        .tape-controls {
+            position: absolute; top: 20px; right: 20px; z-index: 100;
+        }
+        .tape-btn {
+            background: #222; border: 2px solid #555; color: var(--st-red);
+            padding: 5px 15px; cursor: pointer; font-family: var(--font-data);
+            font-size: 0.8rem; border-radius: 4px; text-transform: uppercase;
+            box-shadow: 0 0 5px rgba(255, 21, 21, 0.3); transition: 0.3s;
+        }
+        .tape-btn:hover { background: #333; border-color: var(--st-red); box-shadow: 0 0 15px var(--st-red); }
+        .tape-playing { border-color: var(--neon-blue); color: var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue); }
+
         /* --- TYPOGRAPHY & HEADER --- */
         h1, h2, h3 { font-family: var(--font-title); text-transform: uppercase; text-align: center; letter-spacing: 1px; }
         
@@ -42,58 +55,43 @@
             margin-bottom: 5px;
             position: relative;
         }
-        /* De rode balken boven en onder de titel */
         .header-line { height: 2px; background: var(--st-red); width: 100px; margin: 0 auto 30px auto; box-shadow: 0 0 10px var(--st-red); }
 
         h2 { border-bottom: 1px solid var(--st-red); padding-bottom: 10px; color: var(--st-red); font-size: 1.5rem; margin-top: 50px; text-shadow: 0 0 5px var(--st-red); }
         h3 { color: var(--text-main); font-size: 1.2rem; }
         h4 { margin: 0 0 10px 0; color: var(--st-red); text-align: center; text-transform: uppercase; font-size: 1rem; letter-spacing: 2px;}
 
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; position: relative;}
 
         /* --- BUTTONS (Season Selector) --- */
-        .season-buttons {
-            display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 40px;
-        }
+        .season-buttons { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 40px; }
         .retro-btn {
-            background: transparent;
-            border: 2px solid var(--st-red);
-            color: var(--st-red);
-            padding: 10px 20px;
-            font-family: var(--font-title);
-            font-size: 1rem;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 0 5px var(--st-red);
-            text-shadow: 0 0 5px var(--st-red);
+            background: transparent; border: 2px solid var(--st-red); color: var(--st-red);
+            padding: 10px 20px; font-family: var(--font-title); font-size: 1rem; text-transform: uppercase;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 0 5px var(--st-red); text-shadow: 0 0 5px var(--st-red);
         }
-        .retro-btn:hover, .retro-btn.active {
-            background: var(--st-red);
-            color: #000;
-            box-shadow: 0 0 20px var(--st-red);
-        }
+        .retro-btn:hover, .retro-btn.active { background: var(--st-red); color: #000; box-shadow: 0 0 20px var(--st-red); }
 
-        /* --- PODIUM 2025 SPECIAL --- */
+        /* --- PODIUM SPECIAL --- */
         .podium-section {
-            display: flex; justify-content: center; gap: 30px; margin: 40px 0;
+            display: flex; justify-content: center; gap: 20px; margin: 40px 0;
             flex-wrap: wrap; align-items: flex-end;
         }
         .podium-card {
             background: linear-gradient(180deg, rgba(20,20,30,0.9) 0%, rgba(0,0,0,0.9) 100%);
-            border: 1px solid #333;
-            padding: 20px;
-            text-align: center;
-            width: 140px;
-            position: relative;
-            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+            border: 1px solid #333; padding: 15px; text-align: center; width: 130px;
+            position: relative; box-shadow: 0 0 15px rgba(0,0,0,0.8); transition: 0.3s;
         }
-        .podium-card.rank-1 { order: 2; border-color: var(--retro-gold); transform: scale(1.1); box-shadow: 0 0 20px rgba(255, 204, 0, 0.3); z-index: 2; }
+        .podium-card:hover { transform: translateY(-5px); }
+        
+        .podium-card.rank-1 { order: 2; border-color: var(--retro-gold); transform: scale(1.15); box-shadow: 0 0 25px rgba(255, 204, 0, 0.2); z-index: 2; }
         .podium-card.rank-2 { order: 1; border-color: #c0c0c0; }
         .podium-card.rank-3 { order: 3; border-color: #cd7f32; }
-        
-        .podium-medal { font-size: 2.5rem; display: block; margin-bottom: 10px; }
-        .podium-name { font-family: var(--font-title); font-size: 1.2rem; font-weight: bold; color: #fff; }
+        /* Rank 4: Kleiner en minder opvallend */
+        .podium-card.rank-4 { order: 4; border-color: #444; transform: scale(0.9); opacity: 0.8; margin-left: 10px;}
+
+        .podium-medal { font-size: 2rem; display: block; margin-bottom: 5px; }
+        .podium-name { font-family: var(--font-title); font-size: 1.1rem; font-weight: bold; color: #fff; }
         .podium-stats { font-size: 0.8rem; color: var(--text-muted); margin-top: 5px; }
 
         /* --- GRIDS & TABLES --- */
@@ -101,36 +99,25 @@
         .hall-of-fame-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
 
         .table-container {
-            background: rgba(16, 16, 24, 0.8);
-            border: 1px solid #333;
-            padding: 15px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-            overflow-x: auto;
-            position: relative;
+            background: rgba(16, 16, 24, 0.8); border: 1px solid #333; padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5); overflow-x: auto; position: relative;
         }
-        /* Scanline effect overlay */
+        /* Scanline effect */
         .table-container::after {
             content: " "; display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px;
-            pointer-events: none; z-index: 10;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px; pointer-events: none; z-index: 10;
         }
 
         table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
         th { text-align: center; padding: 10px; color: var(--st-red); border-bottom: 2px solid var(--st-red); font-family: var(--font-title); }
         td { padding: 10px 5px; text-align: center; border-bottom: 1px solid #333; }
-        
         .rank-table tbody tr:nth-child(1) td { color: var(--retro-gold); text-shadow: 0 0 5px var(--retro-gold); } 
 
-        /* --- HALL OF FAME CARDS (VHS Style) --- */
-        .hof-card {
-            background: #111;
-            border: 1px solid #444;
-            border-left: 4px solid var(--st-red);
-            padding: 15px;
-            position: relative;
-        }
+        /* --- HALL OF FAME CARDS --- */
+        .hof-card { background: #111; border: 1px solid #444; border-left: 4px solid var(--st-red); padding: 15px; position: relative; }
         .hof-list { list-style: none; padding: 0; margin: 0; }
         .hof-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #333; font-size: 0.85rem; }
+        .hof-item:last-child { border-bottom: none; }
         .hof-val { color: var(--st-red); font-weight: bold; text-shadow: 0 0 3px var(--st-red); }
 
         /* --- MATCH LIST --- */
@@ -141,7 +128,6 @@
         }
         .match-card:hover { border-color: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); }
         .match-card.future { opacity: 0.6; border-style: dashed; }
-        
         .score-display { font-size: 1.3rem; min-width: 80px; text-align: center; color: #fff; text-shadow: 0 0 5px #fff; }
         .day-badge { font-size: 0.8rem; background: #333; color: #fff; padding: 2px 6px; margin-right: 10px; border: 1px solid #555;}
         .date-small { font-size: 0.7rem; color: #666; display: block; margin-bottom: 2px;}
@@ -149,13 +135,18 @@
         /* --- CHART --- */
         .chart-container { background: rgba(0,0,0,0.5); border: 1px solid #333; padding: 15px; margin-bottom: 30px; height: 300px; }
         .loading { text-align: center; padding: 50px; color: var(--st-red); font-family: var(--font-title); font-size: 1.5rem; animation: blink 1.5s infinite; }
-
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-
         #debug-log { background: #330000; color: #ffcccc; padding: 15px; border: 1px solid red; display: none; margin-bottom: 20px; font-size:0.8rem;}
     </style>
 </head>
 <body>
+
+<div class="tape-controls">
+    <audio id="bg-music" loop>
+        <source src="theme.mp3" type="audio/mpeg">
+    </audio>
+    <button class="tape-btn" id="music-btn" onclick="toggleMusic()">▶ PLAY TAPE</button>
+</div>
 
 <div class="container">
     <h1>Padel Pro Hawkins</h1>
@@ -166,11 +157,9 @@
 
     <div id="dashboard" style="display:none;">
         
-        <div id="podium-2025-container">
-            </div>
+        <div id="podium-2025-container"></div>
 
-        <div class="season-buttons" id="season-buttons">
-            </div>
+        <div class="season-buttons" id="season-buttons"></div>
 
         <div class="chart-container">
             <canvas id="pointsChart"></canvas>
@@ -249,6 +238,22 @@
     let availableYears = [];
     let allDetectedPlayers = new Set(["Jorden", "Yarni", "Lars", "Vince"]);
     let activeScope = 'all';
+
+    // MUSIC CONTROL
+    function toggleMusic() {
+        const audio = document.getElementById('bg-music');
+        const btn = document.getElementById('music-btn');
+        if (audio.paused) {
+            audio.play().then(() => {
+                btn.innerText = "❚❚ PAUSE TAPE";
+                btn.classList.add('tape-playing');
+            }).catch(e => alert("Kan bestand 'theme.mp3' niet vinden. Zet dit in dezelfde map!"));
+        } else {
+            audio.pause();
+            btn.innerText = "▶ PLAY TAPE";
+            btn.classList.remove('tape-playing');
+        }
+    }
 
     function createScope() {
         return {
@@ -444,7 +449,7 @@
             setupControls();
             activeScope = availableYears.includes("2026") ? "2026" : (availableYears[0] || 'all');
             
-            renderPodium2025(); // Render altijd podium 2025
+            renderPodium2025(); // Render altijd podium 2025 met 4 plekken
             renderDashboard(activeScope);
             
             document.getElementById('loading').style.display = 'none';
@@ -478,16 +483,16 @@
         createBtn('all', 'ALL TIME');
     }
 
-    // --- RENDER PODIUM 2025 (VAST) ---
+    // --- RENDER PODIUM 2025 (4 Plekken) ---
     function renderPodium2025() {
         const container = document.getElementById('podium-2025-container');
         container.innerHTML = '';
         
-        // Check of 2025 data bestaat
-        if (!db['2025']) return; // Verberg als geen 2025 data
+        if (!db['2025']) return;
 
         const stats = db['2025'].pStats;
-        const sorted = Object.keys(stats).sort((a,b) => stats[b].pts - stats[a].pts).slice(0, 3);
+        // Sorteren en top 4 pakken
+        const sorted = Object.keys(stats).sort((a,b) => stats[b].pts - stats[a].pts).slice(0, 4);
         
         if (sorted.length === 0) return;
 
@@ -496,12 +501,13 @@
                                    ${getPodiumHTML(sorted[1], 2, stats)}
                                    ${getPodiumHTML(sorted[0], 1, stats)}
                                    ${getPodiumHTML(sorted[2], 3, stats)}
+                                   ${getPodiumHTML(sorted[3], 4, stats)}
                                </div>`;
     }
 
     function getPodiumHTML(player, rank, stats) {
         if (!player) return '';
-        const medals = ['🥇', '🥈', '🥉'];
+        const medals = ['🥇', '🥈', '🥉', '🪵']; // Hout voor plek 4
         return `
             <div class="podium-card rank-${rank}">
                 <div class="podium-medal">${medals[rank-1]}</div>
