@@ -189,7 +189,7 @@
     function logError(msg) {
         document.getElementById('debug-log').style.display = 'block';
         document.getElementById('debug-log').innerText += "FOUT: " + msg + "\n";
-        document.getElementById('loading').innerText = "Er is een fout opgetreden. Zie details hierboven.";
+        document.getElementById('loading').innerHTML = "<span style='color:red'>Er is een fout opgetreden.</span>";
     }
 
     async function fetchData() {
@@ -261,7 +261,8 @@
                 let year = "2025";
                 if (dateStr.includes('/')) year = dateStr.split('/')[2];
                 else if (dateStr.includes('-')) year = dateStr.split('-')[0];
-                year = year.substring(0, 4);
+                if(year && year.length >= 4) year = year.substring(0, 4);
+                else year = "2025"; // Fallback als datum ongeldig is
 
                 initScope(year);
 
@@ -286,11 +287,15 @@
                 // Functie om Scope (Jaar of All Time) bij te werken
                 const updateScopeStats = (scope) => {
                     const d = db[scope];
-                    if (!d) return; 
+                    // CRASH FIX: Check of chart en labels bestaan
+                    if (!d || !d.chart || !d.chart.labels) return; 
 
                     // 1. Chart Data Update (VEILIG)
-                    // Check of deze dag al bestaat in labels, zo niet, voeg toe en kopieer vorige waarde voor iedereen
-                    if (d.chart.labels[d.chart.labels.length - 1] !== dayNum) {
+                    // We checken de lengte van de labels array, NIET van een speler die misschien niet bestaat
+                    const currentLabelsLen = d.chart.labels.length;
+                    const lastLabel = currentLabelsLen > 0 ? d.chart.labels[currentLabelsLen - 1] : null;
+
+                    if (lastLabel !== dayNum) {
                         d.chart.labels.push(dayNum);
                         playerNames.forEach(p => {
                             if (d.chart[p]) {
@@ -299,10 +304,9 @@
                             }
                         });
                     }
-                    // Bepaal de huidige index (laatste positie)
-                    const refPlayer = playerNames[0]; 
-                    if (!d.chart[refPlayer]) return; // Safety check
-                    const chartIdx = d.chart[refPlayer].length - 1;
+                    
+                    // Gebruik de nieuwe lengte van de labels array voor de index
+                    const chartIdx = d.chart.labels.length - 1;
 
                     // Update punten in grafiek
                     winners.forEach(p => { if(d.chart[p]) d.chart[p][chartIdx] += diff; });
@@ -388,7 +392,7 @@
             document.getElementById('dashboard').style.display = 'block';
 
         } catch (err) {
-            logError("Verwerkingsfout: " + err.message + "\nStack: " + err.stack);
+            logError("Verwerkingsfout: " + err.message);
             console.error(err);
         }
     }
