@@ -402,4 +402,155 @@
         } catch (err) {
             console.error(err);
             document.getElementById('loading').innerHTML = `
-                <strong style="color:var(--neon-pink)">FOU
+                <strong style="color:var(--neon-pink)">FOUT:</strong><br>${err.message}
+            `;
+        }
+    }
+
+    // --- HELPER FUNCTIES ---
+    function setupYearSelector() {
+        const sel = document.getElementById('yearSelect');
+        sel.innerHTML = '';
+        let optAll = document.createElement('option'); optAll.value = 'all'; optAll.text = 'Alles (All-time)'; sel.appendChild(optAll);
+        availableYears.forEach(y => { let opt = document.createElement('option'); opt.value = y; opt.text = `Seizoen ${y}`; sel.appendChild(opt); });
+    }
+
+    function renderChampions(years, data) {
+        const container = document.getElementById('champions-container');
+        container.innerHTML = '';
+        const currentYear = new Date().getFullYear().toString();
+        years.forEach(year => {
+            // Pas dit aan als je het huidige jaar OOK als kampioen wilt zien
+            if (year === currentYear) return; 
+            
+            const pStats = data[year].pStats;
+            const winnerKey = Object.keys(pStats).sort((a,b) => pStats[b].pts - pStats[a].pts)[0];
+            if (!winnerKey) return;
+            const div = document.createElement('div');
+            div.className = 'champion-card';
+            div.innerHTML = `<div class="champion-year">Kampioen ${year}</div><div class="champion-name">${winnerKey}</div><div class="champion-pts">${pStats[winnerKey].pts} ptn</div>`;
+            container.appendChild(div);
+        });
+    }
+
+    function updateTables() {
+        const year = document.getElementById('yearSelect').value;
+        const dataSource = (year === 'all') ? allTimeData : yearlyData[year];
+        if(!dataSource) return;
+
+        // Individual
+        const sortedPlayers = Object.keys(dataSource.pStats).sort((a,b) => {
+            if(dataSource.pStats[b].pts !== dataSource.pStats[a].pts) return dataSource.pStats[b].pts - dataSource.pStats[a].pts;
+            return (dataSource.pStats[b].legsFor - dataSource.pStats[b].legsAg) - (dataSource.pStats[a].legsFor - dataSource.pStats[a].legsAg);
+        });
+        document.getElementById('individual-body').innerHTML = sortedPlayers.map((p, i) => {
+            const stats = dataSource.pStats[p];
+            const totalPlayed = stats.w + stats.l;
+            const winP = totalPlayed > 0 ? Math.round((stats.w / totalPlayed)*100) : 0;
+            return `<tr><td>${i+1}</td><td>${p}</td><td style="color:var(--neon-blue);font-weight:bold">${stats.pts}</td><td style="font-size:0.8rem; color:#aaa">${winP}%</td><td>${stats.legsFor}</td><td>${stats.legsAg}</td><td>${stats.legsFor - stats.legsAg}</td></tr>`;
+        }).join('');
+
+        // Duo
+        const sortedDuos = Object.keys(dataSource.dStats).sort((a,b) => dataSource.dStats[b].pts - dataSource.dStats[a].pts);
+        document.getElementById('duo-body').innerHTML = sortedDuos.map((t, i) => {
+            const stats = dataSource.dStats[t];
+            const totalPlayed = stats.w + stats.l;
+            const winP = totalPlayed > 0 ? Math.round((stats.w / totalPlayed)*100) : 0;
+            return `<tr><td>${i+1}</td><td style="font-size:0.85rem">${t}</td><td style="color:var(--neon-pink);font-weight:bold">${stats.pts}</td><td style="font-size:0.8rem; color:#aaa">${winP}%</td><td>${stats.legsFor}</td><td>${stats.legsAg}</td><td>${stats.legsFor - stats.legsAg}</td></tr>`;
+        }).join('');
+
+        renderH2H(dataSource.h2hStats);
+    }
+
+    function renderH2H(h2hStats) {
+        const tbody = document.getElementById('h2h-body');
+        tbody.innerHTML = '';
+        if(!h2hStats) return;
+        Object.values(h2hStats).forEach(m => {
+            const total = m.t1Wins + m.t2Wins;
+            if (total === 0) return;
+            const t1P = Math.round((m.t1Wins/total)*100);
+            const bar = `<div style="display:flex; height:6px; width:100%; background:#333; border-radius:3px; overflow:hidden; margin-top:5px;"><div style="width:${t1P}%; background:var(--neon-blue);"></div><div style="flex-grow:1; background:var(--neon-pink);"></div></div>`;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td style="text-align:right; font-size:0.8rem;"><span style="color:var(--neon-blue)">${m.t1}</span><div style="font-weight:bold; font-size:1.1rem;">${m.t1Wins}</div></td><td style="padding:0 15px;"><div style="text-align:center; font-size:0.7rem; color:#888;">VS</div>${bar}</td><td style="text-align:left; font-size:0.8rem;"><span style="color:var(--neon-pink)">${m.t2}</span><div style="font-weight:bold; font-size:1.1rem;">${m.t2Wins}</div></td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderFunStats(allStreaks, allLossStreaks, allMatches, pStats, playerNames) {
+        allStreaks.sort((a,b) => b.count - a.count);
+        fillList('list-streaks', allStreaks.slice(0, 4), item => `<span class="hof-name">${item.name}</span> <span class="hof-val">${item.count}</span>`);
+        allLossStreaks.sort((a,b) => b.count - a.count);
+        fillList('list-loss-streaks', allLossStreaks.slice(0, 4), item => `<span class="hof-name">${item.name}</span> <span class="hof-val">${item.count}</span>`);
+        allMatches.sort((a,b) => b.diff - a.diff);
+        fillList('list-bigwins', allMatches.slice(0, 4), item => `<span class="hof-name" style="font-size:0.8rem">${item.text}</span> <span class="hof-val">${item.score}</span>`);
+        let thrillers = allMatches.filter(m => m.diff > 0).sort((a,b) => a.diff - b.diff);
+        fillList('list-thrillers', thrillers.slice(0, 4), item => `<span class="hof-name" style="font-size:0.8rem">${item.text}</span> <span class="hof-val">${item.score}</span>`);
+        let bagelsList = playerNames.map(p => ({ name: p, count: pStats[p].bagels })).filter(x => x.count > 0).sort((a,b) => b.count - a.count);
+        fillList('list-bagels', bagelsList.slice(0, 4), item => `<span class="hof-name">${item.name}</span> <span class="hof-val">${item.count}</span>`);
+    }
+
+    function fillList(id, items, fmt) {
+        const el = document.getElementById(id);
+        if(!el) return;
+        if (items.length === 0) { el.innerHTML = '<li style="text-align:center; color:#555; padding:10px;">Nog geen data</li>'; return; }
+        el.innerHTML = items.map((item, i) => `<li class="hof-item"><span class="hof-rank hof-rank-${i+1}">${i+1}.</span>${fmt(item)}</li>`).join('');
+    }
+
+    function renderHistory(matches) {
+        const historyContainer = document.getElementById('match-history');
+        historyContainer.innerHTML = '';
+        matches.reverse().forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'match-card';
+            
+            let scoreContent = `<span class="score-display">${m.s1} - ${m.s2}</span>`;
+            if (!m.isPlayed) {
+                scoreContent = `<span class="score-display" style="background:none; color:#777; font-size:0.8rem;">Gepland</span>`;
+            }
+
+            div.innerHTML = `
+                <div style="display:flex; align-items:center;">
+                    <div>
+                        <span class="date-small">${m.date}</span>
+                        <span class="day-badge">Dag ${m.day}</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; margin-left:10px;">
+                         <span style="color:var(--neon-blue); font-size:0.9rem;">${m.t1Name}</span>
+                    </div>
+                </div>
+                ${scoreContent}
+                <div style="text-align:right;">
+                     <span style="color:var(--neon-pink); font-size:0.9rem;">${m.t2Name}</span>
+                </div>
+            `;
+            historyContainer.appendChild(div);
+        });
+    }
+
+    function renderChart(labels, pointsData) {
+        const ctx = document.getElementById('pointsChart').getContext('2d');
+        if(window.myChart) window.myChart.destroy();
+        window.myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Jorden', data: pointsData['Jorden'], borderColor: '#00ffff', tension: 0.3 },
+                    { label: 'Yarni', data: pointsData['Yarni'], borderColor: '#ff00ff', tension: 0.3 },
+                    { label: 'Lars', data: pointsData['Lars'], borderColor: '#ffd700', tension: 0.3 },
+                    { label: 'Vince', data: pointsData['Vince'], borderColor: '#c0ff00', tension: 0.3 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: 'white' } } },
+                scales: { y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'white' } }, x: { display: false } }
+            }
+        });
+    }
+
+    fetchData();
+</script>
+</body>
+</html>
