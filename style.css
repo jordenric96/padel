@@ -1,13 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@400;600;800&display=swap');
+
 :root {
     --cobalt-blue: #1446A0;
     --razzmatazz: #DB3069;
     --royal-gold: #F5D547;
-    --beige: #EBEBD3;
+    --beige: #EBEBD3; /* Gebruiken we nu minder, enkel voor heel subtiele accenten */
     --gunmetal: #3C3C3B;
-    --bg-color: #f4f6f9;
-    --card-bg: #ffffff;
-    --win-green: #2ecc71;
-    --lose-red: #e74c3c;
+    
+    /* Nieuwe Dark Mode sport kleuren */
+    --dark-bg: #1a1a1a;
+    --card-bg-dark: #2a2a2a;
+    --win-neon: #00ff88;
+    --lose-red: #ff3366;
+    --text-main: #f0f0f0;
+    --text-muted: #a0a0a0;
 }
 
 * {
@@ -17,338 +23,335 @@
 }
 
 body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--gunmetal);
+    /* INTER font voor de basis, superstrak */
+    font-family: 'Inter', sans-serif;
+    background-color: var(--dark-bg);
+    color: var(--text-main);
     font-size: 15px;
     line-height: 1.6;
+    /* Subtiel patroontje in de achtergrond voor actie */
+    background-image: radial-gradient(circle at top right, rgba(20, 70, 160, 0.15), transparent 40%),
+                      radial-gradient(circle at bottom left, rgba(219, 48, 105, 0.1), transparent 40%);
+}
+
+/* Typografie Titels (Sporty & Aggressive) */
+h1, h2, h3, .nav-brand {
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
 }
 
 /* Navigatiebalk */
 .navbar {
-    background-color: var(--cobalt-blue);
+    background: linear-gradient(90deg, #0d2b63, var(--cobalt-blue));
     padding: 0 30px;
-    height: 65px;
+    height: 70px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     position: sticky;
     top: 0;
     z-index: 100;
+    border-bottom: 3px solid var(--royal-gold);
 }
 
 .nav-brand {
     color: white;
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: 1px;
+    font-size: 28px;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
 .nav-links {
     list-style: none;
     display: flex;
-    gap: 25px;
+    gap: 30px;
 }
 
 .nav-links a {
-    color: rgba(255, 255, 255, 0.75);
+    color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
-    font-weight: 600;
-    padding: 8px 0;
+    font-weight: 800;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 10px 0;
     transition: all 0.3s ease;
 }
 
 .nav-links a:hover, .nav-links a.active {
     color: var(--royal-gold);
-    border-bottom: 3px solid var(--royal-gold);
+    text-shadow: 0 0 10px rgba(245, 213, 71, 0.5);
 }
 
 /* Layout */
 .container {
-    max-width: 1100px;
-    margin: 40px auto;
+    max-width: 1200px;
+    margin: 50px auto;
     padding: 0 20px;
 }
 
 .dash-header {
-    margin-bottom: 30px;
+    margin-bottom: 40px;
+    text-align: center;
 }
-.text-center { text-align: center; }
 
 .dash-header h1 {
-    font-size: 32px;
-    color: var(--cobalt-blue);
-    margin-bottom: 8px;
-    font-weight: 800;
+    font-size: 50px;
+    background: linear-gradient(to right, #ffffff, var(--royal-gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
 }
 
 .subtitle {
-    color: #6c757d;
-    font-size: 15px;
+    color: var(--text-muted);
+    font-size: 18px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 3px;
 }
 
 .section-title {
-    font-size: 22px;
-    color: var(--cobalt-blue);
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--beige);
+    font-size: 32px;
+    color: white;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.section-title::after {
+    content: '';
+    flex-grow: 1;
+    height: 2px;
+    background: linear-gradient(to right, var(--razzmatazz), transparent);
 }
 
-/* Base Card Style */
+/* Base Card Style (Gedurfd) */
 .card {
-    background-color: var(--card-bg);
-    border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
-    padding: 25px;
+    background-color: var(--card-bg-dark);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    padding: 30px;
     margin-bottom: 30px;
-    border: 1px solid rgba(0,0,0,0.05);
-}
-
-/* Matchday Widgets (Vorig & Volgend) */
-.matchday-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 25px;
-    margin-bottom: 40px;
-}
-
-@media (max-width: 768px) {
-    .matchday-container { grid-template-columns: 1fr; }
-}
-
-.matchday-card {
+    border: 1px solid rgba(255,255,255,0.05);
     position: relative;
     overflow: hidden;
 }
 
-.past-match { border-top: 5px solid var(--cobalt-blue); }
-.next-match { border-top: 5px solid var(--royal-gold); }
+/* Decoratief lijntje bovenaan elke kaart */
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 5px;
+    background: linear-gradient(90deg, var(--cobalt-blue), var(--razzmatazz));
+}
+
+/* Matchday Widgets */
+.matchday-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 50px;
+}
+
+@media (max-width: 850px) {
+    .matchday-container { grid-template-columns: 1fr; }
+}
 
 .matchday-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
-    border-bottom: 1px dashed #eee;
-    padding-bottom: 10px;
+    margin-bottom: 20px;
 }
 
 .matchday-header h2 {
-    font-size: 18px;
-    margin: 0;
+    font-size: 24px;
+    color: var(--royal-gold);
+    letter-spacing: 1px;
 }
 
 .matchday-date {
-    font-size: 13px;
-    color: #888;
-    background: var(--beige);
-    padding: 4px 10px;
-    border-radius: 15px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 16px;
+    color: var(--text-muted);
+    background: rgba(0,0,0,0.3);
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
 .rust-info {
-    font-size: 14px;
-    margin-bottom: 15px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    background: rgba(219, 48, 105, 0.1);
+    padding: 10px 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--razzmatazz);
 }
 .badge-rest {
     background-color: var(--razzmatazz);
     color: white;
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    box-shadow: 0 0 10px rgba(219, 48, 105, 0.4);
 }
 
-/* Uitslagen in widget */
+/* Uitslagen in widget (Action Packed) */
 .result-row, .upcoming-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #fdfdfd;
-    padding: 10px 15px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    border: 1px solid #f0f0f0;
+    background: rgba(0,0,0,0.2);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255,255,255,0.03);
+    transition: transform 0.2s, background 0.2s;
 }
 
-.result-row { justify-content: center; gap: 15px; }
-.team { font-weight: 600; font-size: 14px; }
-.team.win { color: var(--win-green); }
-.team.lose { color: #888; }
+.result-row:hover, .upcoming-row:hover {
+    transform: scale(1.02);
+    background: rgba(0,0,0,0.4);
+}
+
+.team { 
+    font-weight: 800; 
+    font-size: 16px; 
+    width: 35%;
+}
+.team:first-child { text-align: right; }
+.team:last-child { text-align: left; }
+
+.team.win { color: white; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
+.team.lose { color: var(--text-muted); font-weight: 600; }
+
 .score {
-    font-weight: 800;
-    padding: 4px 12px;
-    border-radius: 6px;
-    font-size: 15px;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 24px;
+    padding: 5px 15px;
+    border-radius: 8px;
+    letter-spacing: 2px;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
 }
-.win-score { background-color: rgba(46, 204, 113, 0.15); color: var(--win-green); }
-.lose-score { background-color: rgba(231, 76, 60, 0.1); color: var(--lose-red); }
+.win-score { background-color: rgba(0, 255, 136, 0.15); color: var(--win-neon); border: 1px solid rgba(0, 255, 136, 0.3);}
+.lose-score { background-color: rgba(255, 51, 102, 0.15); color: var(--lose-red); border: 1px solid rgba(255, 51, 102, 0.3);}
 
-.upcoming-row { justify-content: center; gap: 10px; background: #fffaf0; border-color: var(--beige);}
+.vs {
+    font-family: 'Oswald', sans-serif;
+    background: linear-gradient(135deg, var(--razzmatazz), #ff6b6b);
+    color: white;
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transform: skewX(-15deg);
+    box-shadow: 0 4px 10px rgba(219, 48, 105, 0.4);
+}
 
-/* Stats Grid */
+/* Stats Grid (Knalt eruit) */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-bottom: 40px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 60px;
 }
 
 .stat-card {
-    background-color: var(--card-bg);
-    border-radius: 12px;
-    padding: 20px;
+    background: linear-gradient(145deg, #2a2a2a, #222);
+    border-radius: 16px;
+    padding: 25px;
     display: flex;
     align-items: center;
     gap: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    border-left: 5px solid var(--royal-gold);
-    transition: transform 0.2s;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+    overflow: hidden;
 }
-.stat-card:hover { transform: translateY(-3px); }
-.stat-card.accent-card { border-left-color: var(--razzmatazz); }
+.stat-card::after {
+    content: '';
+    position: absolute;
+    right: -20px; top: -20px; width: 100px; height: 100px;
+    background: radial-gradient(circle, rgba(245, 213, 71, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+}
 
 .stat-icon {
-    font-size: 32px;
-    background-color: #fafafa;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 15px;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    font-size: 40px;
+    filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));
 }
 
-.stat-info { display: flex; flex-direction: column; }
-.stat-label { font-size: 12px; color: #888; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
-.stat-value { font-size: 18px; font-weight: 800; color: var(--gunmetal); margin-top: 3px; }
+.stat-info { display: flex; flex-direction: column; z-index: 1;}
+.stat-label { 
+    font-size: 13px; 
+    color: var(--royal-gold); 
+    text-transform: uppercase; 
+    font-weight: 800; 
+    letter-spacing: 1px; 
+}
+.stat-value { 
+    font-family: 'Oswald', sans-serif;
+    font-size: 28px; 
+    color: white; 
+    margin-top: -2px; 
+}
 
 /* Leaderboards */
 .leaderboards-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 40px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
     .leaderboards-container { grid-template-columns: 1fr; }
 }
 
 .leaderboard-card h2 {
-    font-size: 18px;
-    color: var(--cobalt-blue);
-    margin-bottom: 20px;
+    font-size: 26px;
+    color: white;
+    margin-bottom: 25px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .table-responsive { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; }
+table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+
 th {
-    color: #666;
-    font-size: 11px;
+    color: var(--text-muted);
+    font-size: 12px;
     text-transform: uppercase;
-    padding: 12px 10px;
-    border-bottom: 2px solid var(--beige);
+    letter-spacing: 1px;
+    padding: 0 15px 10px 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
     text-align: left;
 }
-td { padding: 14px 10px; border-bottom: 1px solid #f5f5f5; font-size: 14px; }
-tr:hover td { background-color: #fafbfc; }
 
-.rank-1 td:first-child { font-weight: 800; color: #D4AF37; font-size: 16px;}
-.rank-2 td:first-child { font-weight: 800; color: #C0C0C0; font-size: 16px;}
-.rank-3 td:first-child { font-weight: 800; color: #CD7F32; font-size: 16px;}
-
-.positive { color: var(--win-green); font-weight: bold; }
-.negative { color: var(--lose-red); font-weight: bold; }
-.neutral { color: #888; }
-
-/* Kalender Grid Layout (kalender.html) */
-.calendar-info-pill {
-    display: inline-block;
-    background-color: var(--gunmetal);
-    color: white;
-    padding: 6px 15px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-    margin-top: 10px;
+td { 
+    background-color: rgba(255,255,255,0.03);
+    padding: 15px; 
+    font-size: 16px; 
 }
+/* Mooie afgeronde hoekjes voor de rijen in de tabel */
+tr td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+tr td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
 
-.calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 25px;
-    margin-top: 30px;
-}
+tr:hover td { background-color: rgba(255,255,255,0.06); }
 
-.calendar-card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    border: 1px solid #eaeaea;
-    overflow: hidden;
-}
+/* Rank opmaak (Goud, Zilver, Brons) */
+.rank-1 td:first-child { font-family: 'Oswald', sans-serif; font-size: 22px; color: #FFD700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);}
+.rank-2 td:first-child { font-family: 'Oswald', sans-serif; font-size: 22px; color: #C0C0C0; }
+.rank-3 td:first-child { font-family: 'Oswald', sans-serif; font-size: 22px; color: #CD7F32; }
 
-.card-header {
-    background-color: var(--cobalt-blue);
-    color: white;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.week-title { font-size: 16px; font-weight: bold; }
-.week-date { font-size: 13px; opacity: 0.8; }
+/* Sterkere nadruk op de spelersnaam */
+td strong { color: white; font-size: 18px; }
 
-.card-body { padding: 20px; }
-
-.rest-box {
-    background-color: #fff0f4;
-    padding: 10px 15px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid rgba(219, 48, 105, 0.1);
-}
-.rest-label { font-size: 13px; color: var(--razzmatazz); font-weight: bold; }
-
-.matches-box { display: flex; flex-direction: column; gap: 12px; }
-
-.match-row {
-    display: flex;
-    align-items: center;
-    background: #f8f9fa;
-    padding: 12px;
-    border-radius: 8px;
-    border-left: 4px solid var(--royal-gold);
-}
-
-.match-num {
-    font-size: 12px;
-    font-weight: 800;
-    color: #aaa;
-    margin-right: 15px;
-}
-
-.match-teams {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-grow: 1;
-    font-size: 14px;
-}
-
-.vs {
-    background: var(--gunmetal);
-    color: var(--royal-gold);
-    font-size: 10px;
-    font-weight: bold;
-    padding: 3px 6px;
-    border-radius: 4px;
-    margin: 0 10px;
-    text-transform: uppercase;
-}
+.positive { color: var(--win-neon); font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 1px;}
+.negative { color: var(--lose-red); font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 1px;}
+.neutral { color: var(--text-muted); }
