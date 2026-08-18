@@ -3,271 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Padel Competitie</title>
+    <title>Padel Competitie - Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Padel Competitie</h1>
+    <nav class="navbar">
+        <div class="nav-brand">🎾 Padel League</div>
+        <ul class="nav-links">
+            <li><a href="index.html" class="active">Dashboard</a></li>
+            <li><a href="matchen.html">Kalender</a></li>
+        </ul>
+    </nav>
+
+    <div class="container dashboard">
+        <header class="dash-header">
+            <h1>Seizoen Overzicht</h1>
+            <p class="subtitle">Huidige status na speeldag X</p>
         </header>
-        
-        <div class="info-panel">
-            <strong>Reglement:</strong> 6 spelers, 2 wedstrijden (tot 6) per avond op woensdag (20u). 2 spelers hebben rust. Wisselende duo's. Volledige cyclus: 30 weken.
+
+        <!-- Fun Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-info">
+                    <span class="stat-label">Beste Win Streak</span>
+                    <span class="stat-value">Jorden (4)</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🧊</div>
+                <div class="stat-info">
+                    <span class="stat-label">Grootste Dip</span>
+                    <span class="stat-value">Boma (3x verlies)</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🤝</div>
+                <div class="stat-info">
+                    <span class="stat-label">Gouden Duo</span>
+                    <span class="stat-value">Lars & Vince</span>
+                </div>
+            </div>
+            <div class="stat-card accent-card">
+                <div class="stat-icon">🦈</div>
+                <div class="stat-info">
+                    <span class="stat-label">Beste Saldo</span>
+                    <span class="stat-value">Yarni (+12)</span>
+                </div>
+            </div>
         </div>
 
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Week</th>
-                        <th>Rust</th>
-                        <th>Wedstrijden (Match 1 & Match 2)</th>
-                    </tr>
-                </thead>
-                <tbody>
-            <tr class="odd">
-                <td class="week-col">W1<br><span class="date">26/08/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Jorden & Boma</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Kristof & Lars</span> <span class="vs">vs</span> <span class="team">Vince & Yarni</span></div>
-                    <div class="match-line"><span class="team">Kristof & Vince</span> <span class="vs">vs</span> <span class="team">Lars & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="even">
-                <td class="week-col">W2<br><span class="date">02/09/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Yarni & Vince</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Jorden</span> <span class="vs">vs</span> <span class="team">Kristof & Lars</span></div>
-                    <div class="match-line"><span class="team">Boma & Kristof</span> <span class="vs">vs</span> <span class="team">Jorden & Lars</span></div>
-                </td>
-            </tr>
-            <tr class="odd">
-                <td class="week-col">W3<br><span class="date">09/09/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Lars & Kristof</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Jorden</span> <span class="vs">vs</span> <span class="team">Vince & Yarni</span></div>
-                    <div class="match-line"><span class="team">Boma & Vince</span> <span class="vs">vs</span> <span class="team">Jorden & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="even">
-                <td class="week-col">W4<br><span class="date">16/09/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Jorden & Yarni</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Kristof</span> <span class="vs">vs</span> <span class="team">Lars & Vince</span></div>
-                    <div class="match-line"><span class="team">Boma & Lars</span> <span class="vs">vs</span> <span class="team">Kristof & Vince</span></div>
-                </td>
-            </tr>
-            <tr class="odd">
-                <td class="week-col">W5<br><span class="date">23/09/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Lars & Boma</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Jorden & Kristof</span> <span class="vs">vs</span> <span class="team">Vince & Yarni</span></div>
-                    <div class="match-line"><span class="team">Jorden & Vince</span> <span class="vs">vs</span> <span class="team">Kristof & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="even">
-                <td class="week-col">W6<br><span class="date">30/09/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Vince & Kristof</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Jorden</span> <span class="vs">vs</span> <span class="team">Lars & Yarni</span></div>
-                    <div class="match-line"><span class="team">Boma & Lars</span> <span class="vs">vs</span> <span class="team">Jorden & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="odd">
-                <td class="week-col">W7<br><span class="date">07/10/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Jorden & Yarni</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Vince</span> <span class="vs">vs</span> <span class="team">Kristof & Lars</span></div>
-                    <div class="match-line"><span class="team">Boma & Kristof</span> <span class="vs">vs</span> <span class="team">Lars & Vince</span></div>
-                </td>
-            </tr>
-            <tr class="even">
-                <td class="week-col">W8<br><span class="date">14/10/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Lars & Boma</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Jorden & Yarni</span> <span class="vs">vs</span> <span class="team">Kristof & Vince</span></div>
-                    <div class="match-line"><span class="team">Jorden & Kristof</span> <span class="vs">vs</span> <span class="team">Vince & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="odd">
-                <td class="week-col">W9<br><span class="date">21/10/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Vince & Kristof</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Yarni</span> <span class="vs">vs</span> <span class="team">Jorden & Lars</span></div>
-                    <div class="match-line"><span class="team">Boma & Jorden</span> <span class="vs">vs</span> <span class="team">Lars & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="even">
-                <td class="week-col">W10<br><span class="date">28/10/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Yarni & Boma</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Jorden & Kristof</span> <span class="vs">vs</span> <span class="team">Lars & Vince</span></div>
-                    <div class="match-line"><span class="team">Jorden & Lars</span> <span class="vs">vs</span> <span class="team">Kristof & Vince</span></div>
-                </td>
-            </tr>
-            <tr class="odd">
-                <td class="week-col">W11<br><span class="date">04/11/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Lars & Kristof</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Yarni</span> <span class="vs">vs</span> <span class="team">Jorden & Vince</span></div>
-                    <div class="match-line"><span class="team">Boma & Jorden</span> <span class="vs">vs</span> <span class="team">Vince & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="even">
-                <td class="week-col">W12<br><span class="date">11/11/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Jorden & Vince</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Kristof</span> <span class="vs">vs</span> <span class="team">Lars & Yarni</span></div>
-                    <div class="match-line"><span class="team">Boma & Lars</span> <span class="vs">vs</span> <span class="team">Kristof & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="odd">
-                <td class="week-col">W13<br><span class="date">18/11/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Yarni & Boma</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Jorden & Vince</span> <span class="vs">vs</span> <span class="team">Kristof & Lars</span></div>
-                    <div class="match-line"><span class="team">Jorden & Kristof</span> <span class="vs">vs</span> <span class="team">Lars & Vince</span></div>
-                </td>
-            </tr>
-            <tr class="even">
-                <td class="week-col">W14<br><span class="date">25/11/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Jorden & Lars</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Kristof</span> <span class="vs">vs</span> <span class="team">Vince & Yarni</span></div>
-                    <div class="match-line"><span class="team">Boma & Vince</span> <span class="vs">vs</span> <span class="team">Kristof & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="odd">
-                <td class="week-col">W15<br><span class="date">02/12/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Yarni & Vince</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Lars</span> <span class="vs">vs</span> <span class="team">Jorden & Kristof</span></div>
-                    <div class="match-line"><span class="team">Boma & Jorden</span> <span class="vs">vs</span> <span class="team">Kristof & Lars</span></div>
-                </td>
-            </tr>
-            <tr class="even">
-                <td class="week-col">W16<br><span class="date">09/12/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Jorden & Kristof</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Lars</span> <span class="vs">vs</span> <span class="team">Vince & Yarni</span></div>
-                    <div class="match-line"><span class="team">Boma & Vince</span> <span class="vs">vs</span> <span class="team">Lars & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="odd">
-                <td class="week-col">W17<br><span class="date">16/12/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Vince & Boma</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Jorden & Kristof</span> <span class="vs">vs</span> <span class="team">Lars & Yarni</span></div>
-                    <div class="match-line"><span class="team">Jorden & Lars</span> <span class="vs">vs</span> <span class="team">Kristof & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="even">
-                <td class="week-col">W18<br><span class="date">23/12/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Yarni & Kristof</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Jorden</span> <span class="vs">vs</span> <span class="team">Lars & Vince</span></div>
-                    <div class="match-line"><span class="team">Boma & Lars</span> <span class="vs">vs</span> <span class="team">Jorden & Vince</span></div>
-                </td>
-            </tr>
-            <tr class="odd">
-                <td class="week-col">W19<br><span class="date">30/12/2026</span></td>
-                <td class="rest-col"><span class="badge-rest">Jorden & Lars</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Yarni</span> <span class="vs">vs</span> <span class="team">Kristof & Vince</span></div>
-                    <div class="match-line"><span class="team">Boma & Kristof</span> <span class="vs">vs</span> <span class="team">Vince & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="even">
-                <td class="week-col">W20<br><span class="date">06/01/2027</span></td>
-                <td class="rest-col"><span class="badge-rest">Vince & Boma</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Jorden & Yarni</span> <span class="vs">vs</span> <span class="team">Kristof & Lars</span></div>
-                    <div class="match-line"><span class="team">Jorden & Kristof</span> <span class="vs">vs</span> <span class="team">Lars & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="odd">
-                <td class="week-col">W21<br><span class="date">13/01/2027</span></td>
-                <td class="rest-col"><span class="badge-rest">Yarni & Kristof</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Vince</span> <span class="vs">vs</span> <span class="team">Jorden & Lars</span></div>
-                    <div class="match-line"><span class="team">Boma & Jorden</span> <span class="vs">vs</span> <span class="team">Lars & Vince</span></div>
-                </td>
-            </tr>
-            <tr class="even">
-                <td class="week-col">W22<br><span class="date">20/01/2027</span></td>
-                <td class="rest-col"><span class="badge-rest">Lars & Vince</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Jorden</span> <span class="vs">vs</span> <span class="team">Kristof & Yarni</span></div>
-                    <div class="match-line"><span class="team">Boma & Kristof</span> <span class="vs">vs</span> <span class="team">Jorden & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="odd">
-                <td class="week-col">W23<br><span class="date">27/01/2027</span></td>
-                <td class="rest-col"><span class="badge-rest">Kristof & Boma</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Jorden & Lars</span> <span class="vs">vs</span> <span class="team">Vince & Yarni</span></div>
-                    <div class="match-line"><span class="team">Jorden & Vince</span> <span class="vs">vs</span> <span class="team">Lars & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="even">
-                <td class="week-col">W24<br><span class="date">03/02/2027</span></td>
-                <td class="rest-col"><span class="badge-rest">Lars & Vince</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Yarni</span> <span class="vs">vs</span> <span class="team">Jorden & Kristof</span></div>
-                    <div class="match-line"><span class="team">Boma & Jorden</span> <span class="vs">vs</span> <span class="team">Kristof & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="odd">
-                <td class="week-col">W25<br><span class="date">10/02/2027</span></td>
-                <td class="rest-col"><span class="badge-rest">Jorden & Boma</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Kristof & Yarni</span> <span class="vs">vs</span> <span class="team">Lars & Vince</span></div>
-                    <div class="match-line"><span class="team">Kristof & Lars</span> <span class="vs">vs</span> <span class="team">Vince & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="even">
-                <td class="week-col">W26<br><span class="date">17/02/2027</span></td>
-                <td class="rest-col"><span class="badge-rest">Yarni & Lars</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Jorden</span> <span class="vs">vs</span> <span class="team">Kristof & Vince</span></div>
-                    <div class="match-line"><span class="team">Boma & Kristof</span> <span class="vs">vs</span> <span class="team">Jorden & Vince</span></div>
-                </td>
-            </tr>
-            <tr class="odd">
-                <td class="week-col">W27<br><span class="date">24/02/2027</span></td>
-                <td class="rest-col"><span class="badge-rest">Jorden & Kristof</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Yarni</span> <span class="vs">vs</span> <span class="team">Lars & Vince</span></div>
-                    <div class="match-line"><span class="team">Boma & Lars</span> <span class="vs">vs</span> <span class="team">Vince & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="even">
-                <td class="week-col">W28<br><span class="date">03/03/2027</span></td>
-                <td class="rest-col"><span class="badge-rest">Yarni & Lars</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Vince</span> <span class="vs">vs</span> <span class="team">Jorden & Kristof</span></div>
-                    <div class="match-line"><span class="team">Boma & Jorden</span> <span class="vs">vs</span> <span class="team">Kristof & Vince</span></div>
-                </td>
-            </tr>
-            <tr class="odd">
-                <td class="week-col">W29<br><span class="date">10/03/2027</span></td>
-                <td class="rest-col"><span class="badge-rest">Kristof & Boma</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Jorden & Yarni</span> <span class="vs">vs</span> <span class="team">Lars & Vince</span></div>
-                    <div class="match-line"><span class="team">Jorden & Lars</span> <span class="vs">vs</span> <span class="team">Vince & Yarni</span></div>
-                </td>
-            </tr>
-            <tr class="even">
-                <td class="week-col">W30<br><span class="date">17/03/2027</span></td>
-                <td class="rest-col"><span class="badge-rest">Jorden & Vince</span></td>
-                <td class="match-col">
-                    <div class="match-line"><span class="team">Boma & Yarni</span> <span class="vs">vs</span> <span class="team">Kristof & Lars</span></div>
-                    <div class="match-line"><span class="team">Boma & Kristof</span> <span class="vs">vs</span> <span class="team">Lars & Yarni</span></div>
-                </td>
-            </tr>
-                </tbody>
-            </table>
+        <div class="leaderboards-container">
+            <!-- Individueel Klassement -->
+            <div class="card leaderboard-card">
+                <h2>🏆 Individueel Klassement</h2>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Speler</th>
+                            <th>G</th>
+                            <th>W</th>
+                            <th>V</th>
+                            <th>+/-</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Fictieve data als voorbeeld -->
+                        <tr class="rank-1">
+                            <td>1</td><td><strong>Jorden</strong></td><td>6</td><td>5</td><td>1</td><td class="positive">+10</td>
+                        </tr>
+                        <tr class="rank-2">
+                            <td>2</td><td><strong>Yarni</strong></td><td>6</td><td>4</td><td>2</td><td class="positive">+8</td>
+                        </tr>
+                        <tr class="rank-3">
+                            <td>3</td><td><strong>Lars</strong></td><td>6</td><td>3</td><td>3</td><td class="positive">+2</td>
+                        </tr>
+                        <tr>
+                            <td>4</td><td>Vince</td><td>6</td><td>3</td><td>3</td><td class="negative">-1</td>
+                        </tr>
+                        <tr>
+                            <td>5</td><td>Kristof</td><td>6</td><td>2</td><td>4</td><td class="negative">-6</td>
+                        </tr>
+                        <tr>
+                            <td>6</td><td>Boma</td><td>6</td><td>1</td><td>5</td><td class="negative">-13</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Duo Klassement (Top 3) -->
+            <div class="card leaderboard-card">
+                <h2>🥇 Top 3 Duo's</h2>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Duo</th>
+                            <th>Winst %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="rank-1">
+                            <td>1</td><td>Lars & Vince</td><td>100% (2/2)</td>
+                        </tr>
+                        <tr class="rank-2">
+                            <td>2</td><td>Jorden & Yarni</td><td>100% (1/1)</td>
+                        </tr>
+                        <tr class="rank-3">
+                            <td>3</td><td>Kristof & Boma</td><td>50% (1/2)</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="next-match-teaser">
+                    <h3>Volgende Speeldag (Week 1)</h3>
+                    <p><strong>Rust:</strong> <span class="badge-rest">Jorden & Boma</span></p>
+                    <a href="matchen.html" class="btn">Bekijk Kalender →</a>
+                </div>
+            </div>
         </div>
     </div>
 </body>
