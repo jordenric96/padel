@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padel Competitie - Kalender</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🎾 Padel League</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="matchen.html" class="active">Kalender</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <header class="dash-header">
+            <h1>Volledige Kalender</h1>
+            <p class="subtitle">Cyclus van 30 weken</p>
+        </header>
+
+        <div class="card table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Week</th>
+                        <th>Rust</th>
+                        <th>Wedstrijden (Elke Woensdag 20:00)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="odd">
+                        <td class="week-col">W1<br><span class="date">26/08/2026</span></td>
+                        <td class="rest-col"><span class="badge-rest">Jorden & Boma</span></td>
+                        <td class="match-col">
+                            <div class="match-line"><span class="team">Kristof & Lars</span> <span class="vs">vs</span> <span class="team">Vince & Yarni</span></div>
+                            <div class="match-line"><span class="team">Kristof & Vince</span> <span class="vs">vs</span> <span class="team">Lars & Yarni</span></div>
+                        </td>
+                    </tr>
+                    <tr class="even">
+                        <td class="week-col">W2<br><span class="date">02/09/2026</span></td>
+                        <td class="rest-col"><span class="badge-rest">Yarni & Vince</span></td>
+                        <td class="match-col">
+                            <div class="match-line"><span class="team">Boma & Jorden</span> <span class="vs">vs</span> <span class="team">Kristof & Lars</span></div>
+                            <div class="match-line"><span class="team">Boma & Kristof</span> <span class="vs">vs</span> <span class="team">Jorden & Lars</span></div>
+                        </td>
+                    </tr>
+                    <tr class="odd">
+                        <td class="week-col">W3<br><span class="date">09/09/2026</span></td>
+                        <td class="rest-col"><span class="badge-rest">Lars & Kristof</span></td>
+                        <td class="match-col">
+                            <div class="match-line"><span class="team">Boma & Jorden</span> <span class="vs">vs</span> <span class="team">Vince & Yarni</span></div>
+                            <div class="match-line"><span class="team">Boma & Vince</span> <span class="vs">vs</span> <span class="team">Jorden & Yarni</span></div>
+                        </td>
+                    </tr>
+                    <!-- Plak hier de overige weken in vanuit het vorige bestand -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
