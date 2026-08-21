@@ -1,4 +1,3 @@
-// 1. KOPPEL SUPABASE
 const SUPABASE_URL = 'https://rwtqrxaabkcueuboqbju.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_hu5zlS1aivNht1gzRgbuww_WIbCr2eL'; 
 
@@ -9,31 +8,18 @@ let currentEditMatchId = null;
 let selectedScoreT1 = null;
 let selectedScoreT2 = null;
 
-// Start applicatie
 async function init() {
     const { data: matches, error } = await db.from('matches').select('*').order('id', { ascending: true });
-    
-    if (error) {
-        console.error("Fout bij laden database:", error);
-        return;
-    }
-    
+    if (error) { console.error("Fout bij laden:", error); return; }
     renderCalendar(matches);
 }
 
-// 2. BOUW DE KALENDER & AUTO-SCROLL
 function renderCalendar(matches) {
     const container = document.getElementById('calendar-container');
     let html = '';
-    
-    // Groepeer alle matchen per week
     const weeks = {};
-    matches.forEach(m => {
-        if (!weeks[m.week]) weeks[m.week] = [];
-        weeks[m.week].push(m);
-    });
+    matches.forEach(m => { if (!weeks[m.week]) weeks[m.week] = []; weeks[m.week].push(m); });
 
-    // Bepaal de huidige week om naartoe te scrollen
     const nextMatchRow = matches.find(m => m.score_t1 === null);
     const currentWeekToScroll = nextMatchRow ? nextMatchRow.week : 30;
 
@@ -48,7 +34,6 @@ function renderCalendar(matches) {
         weekMatches.forEach((m, idx) => {
             const isPlayed = m.score_t1 !== null;
             let scoreDisplay = `<span class="vs">VS</span>`;
-            
             if (isPlayed) {
                 const t1Wins = m.score_t1 > m.score_t2;
                 scoreDisplay = `<span class="score ${t1Wins ? 'win-score' : 'lose-score'}">${m.score_t1} - ${m.score_t2}</span>`;
@@ -62,7 +47,7 @@ function renderCalendar(matches) {
                         ${scoreDisplay}
                         <span class="team ${isPlayed && m.score_t2 > m.score_t1 ? 'win' : ''}">${m.t2_p1} & ${m.t2_p2}</span>
                     </div>
-                    <button class="edit-btn" style="margin-left:12px;" onclick="openModal(${m.id}, '${m.t1_p1} & ${m.t1_p2}', '${m.t2_p1} & ${m.t2_p2}', ${m.score_t1}, ${m.score_t2})">✎</button>
+                    <button class="edit-btn" style="margin-left:8px;" onclick="openModal(${m.id}, '${m.t1_p1} & ${m.t1_p2}', '${m.t2_p1} & ${m.t2_p2}', ${m.score_t1}, ${m.score_t2})">✎</button>
                 </div>
             `;
         });
@@ -78,9 +63,7 @@ function renderCalendar(matches) {
                         <span class="rest-label">Rust:</span>
                         <span class="badge-rest">${rest1} & ${rest2}</span>
                     </div>
-                    <div class="matches-box">
-                        ${matchesHtml}
-                    </div>
+                    <div class="matches-box">${matchesHtml}</div>
                 </div>
             </div>
         `;
@@ -88,26 +71,21 @@ function renderCalendar(matches) {
 
     container.innerHTML = html;
 
-    // Voer de Auto-Scroll uit naar de huidige week
     setTimeout(() => {
         const weekCard = document.getElementById(`week-${currentWeekToScroll}`);
         if (weekCard) {
-            // -100 zorgt ervoor dat het blokje niet verdwijnt achter je zwevende navigatiebalk
-            const yOffset = -100; 
+            const yOffset = -80; 
             const y = weekCard.getBoundingClientRect().top + window.scrollY + yOffset;
             window.scrollTo({top: y, behavior: 'smooth'});
         }
-    }, 400); // Korte pauze zodat de HTML zeker geladen is
+    }, 400);
 }
 
-// 3. BEWERK / UPDATE SYSTEEM MET BOLLETJES
 function selectScore(team, value) {
     if (team === 't1') selectedScoreT1 = value;
     if (team === 't2') selectedScoreT2 = value;
-
     const bubbles = document.querySelectorAll(`#bubbles-${team} .score-bubble`);
     bubbles.forEach(b => b.classList.remove('selected'));
-    
     bubbles[value].classList.add('selected');
 }
 
@@ -116,30 +94,22 @@ function openModal(id, t1, t2, sc1, sc2) {
     document.getElementById('modal-match-id').innerText = `#${id}`;
     document.getElementById('modal-t1-names').innerText = t1;
     document.getElementById('modal-t2-names').innerText = t2;
-    
     document.querySelectorAll('.score-bubble').forEach(b => b.classList.remove('selected'));
-    selectedScoreT1 = null;
-    selectedScoreT2 = null;
-    
+    selectedScoreT1 = null; selectedScoreT2 = null;
     if (sc1 !== null) selectScore('t1', sc1);
     if (sc2 !== null) selectScore('t2', sc2);
-    
     document.getElementById('score-modal').classList.add('active');
 }
 
 function clearScore() {
-    selectedScoreT1 = null;
-    selectedScoreT2 = null;
+    selectedScoreT1 = null; selectedScoreT2 = null;
     document.querySelectorAll('.score-bubble').forEach(b => b.classList.remove('selected'));
 }
 
-function closeModal() {
-    document.getElementById('score-modal').classList.remove('active');
-}
+function closeModal() { document.getElementById('score-modal').classList.remove('active'); }
 
 async function saveScore() {
     let updateData = {};
-    
     if (selectedScoreT1 === null || selectedScoreT2 === null) {
         updateData = { score_t1: null, score_t2: null, tussenstand_t1: null, tussenstand_t2: null };
     } else {
@@ -147,19 +117,9 @@ async function saveScore() {
     }
 
     const { error } = await db.from('matches').update(updateData).eq('id', currentEditMatchId);
-    
-    if (!error) {
-        closeModal();
-        init(); // Kalender herlaadt live!
-    } else {
-        alert("Fout bij opslaan: " + error.message);
-    }
+    if (!error) { closeModal(); init(); } else { alert("Fout bij opslaan: " + error.message); }
 }
 
-function formatDate(dateString) {
-    const d = new Date(dateString);
-    return d.toLocaleDateString('nl-BE', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
-}
+function formatDate(dateString) { return new Date(dateString).toLocaleDateString('nl-BE', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase(); }
 
-// Start app!
 init();
