@@ -85,8 +85,8 @@ function calculateAndRenderLeaderboards(allMatches, playedMatches) {
         const t2 = [m.t2_p1, m.t2_p2].sort();
         const d1 = t1.join(' & '); const d2 = t2.join(' & ');
         
-        if (!duoStats[d1]) duoStats[d1] = { wins: 0, losses: 0 };
-        if (!duoStats[d2]) duoStats[d2] = { wins: 0, losses: 0 };
+        if (!duoStats[d1]) duoStats[d1] = { wins: 0, losses: 0, bagelsG: 0, thrills: 0 };
+        if (!duoStats[d2]) duoStats[d2] = { wins: 0, losses: 0, bagelsG: 0, thrills: 0 };
 
         const t1Wins = m.score_t1 > m.score_t2;
 
@@ -111,13 +111,24 @@ function calculateAndRenderLeaderboards(allMatches, playedMatches) {
         if (t1Wins) { duoStats[d1].wins++; duoStats[d2].losses++; } 
         else { duoStats[d2].wins++; duoStats[d1].losses++; }
 
-        if (m.score_t1 === 6 && m.score_t2 === 0) { t1.forEach(p => stats[p].bagelsGiven++); t2.forEach(p => stats[p].bagelsEaten++); }
-        if (m.score_t2 === 6 && m.score_t1 === 0) { t2.forEach(p => stats[p].bagelsGiven++); t1.forEach(p => stats[p].bagelsEaten++); }
+        // SOLO & DUO Special Stats
+        if (m.score_t1 === 6 && m.score_t2 === 0) { 
+            t1.forEach(p => stats[p].bagelsGiven++); t2.forEach(p => stats[p].bagelsEaten++); 
+            duoStats[d1].bagelsG++;
+        }
+        if (m.score_t2 === 6 && m.score_t1 === 0) { 
+            t2.forEach(p => stats[p].bagelsGiven++); t1.forEach(p => stats[p].bagelsEaten++); 
+            duoStats[d2].bagelsG++;
+        }
         if ((m.score_t1 === 6 && m.score_t2 === 5) || (m.score_t1 === 5 && m.score_t2 === 6)) {
             if (t1Wins) t1.forEach(p => stats[p].thrills++); else t2.forEach(p => stats[p].thrills++);
+            duoStats[d1].thrills++; duoStats[d2].thrills++;
         }
     });
 
+    // ==========================================
+    // KLASSEMENT TABELLEN VULLEN
+    // ==========================================
     const ranking = Object.keys(stats).map(p => ({
         name: p, ...stats[p], saldo: stats[p].gamesWon - stats[p].gamesLost
     })).sort((a, b) => b.wins - a.wins || b.saldo - a.saldo);
@@ -130,20 +141,25 @@ function calculateAndRenderLeaderboards(allMatches, playedMatches) {
     });
     document.getElementById('individual-leaderboard').innerHTML = indHTML;
 
-    const duoRanking = Object.keys(duoStats).map(d => {
+    const duoRankingStats = Object.keys(duoStats).map(d => {
         const total = duoStats[d].wins + duoStats[d].losses;
-        return { duo: d, w: duoStats[d].wins, l: duoStats[d].losses, perc: total === 0 ? 0 : Math.round((duoStats[d].wins / total) * 100) };
-    }).sort((a, b) => b.perc - a.perc || b.w - a.w);
-
+        return { duo: d, ...duoStats[d], total: total, perc: total === 0 ? 0 : Math.round((duoStats[d].wins / total) * 100) };
+    });
+    
+    const duoRanking = [...duoRankingStats].sort((a, b) => b.perc - a.perc || b.wins - a.wins);
     let duoHTML = '';
     duoRanking.forEach((r, idx) => {
         const pClass = r.perc > 50 ? 'positive' : (r.perc === 0 ? 'neutral' : 'negative');
-        duoHTML += `<tr class="rank-${idx+1}"><td>${idx+1}</td><td><strong>${r.duo}</strong></td><td>${r.w} - ${r.l}</td><td class="${pClass}">${r.perc}%</td></tr>`;
+        duoHTML += `<tr class="rank-${idx+1}"><td>${idx+1}</td><td><strong>${r.duo}</strong></td><td>${r.wins} - ${r.losses}</td><td class="${pClass}">${r.perc}%</td></tr>`;
     });
     document.getElementById('duo-leaderboard').innerHTML = duoHTML;
 
+    // ==========================================
+    // HALL OF FAME: BEREKENINGEN
+    // ==========================================
     const hasPlayed = ranking[0].games > 0;
     
+    // SOLO Sorteringen
     const sortedByMuur = [...ranking].filter(r=>r.games > 0).sort((a,b) => (a.gamesLost/a.games) - (b.gamesLost/b.games));
     const sortedBySchietschijf = [...ranking].filter(r=>r.games > 0).sort((a,b) => b.gamesLost - a.gamesLost);
     const sortedByStreakWin = [...players].map(p => ({name: p, val: playerStreaks[p].maxWin})).sort((a,b) => b.val - a.val);
@@ -152,96 +168,129 @@ function calculateAndRenderLeaderboards(allMatches, playedMatches) {
     const sortedByBagelE = [...players].map(p => ({name: p, val: stats[p].bagelsEaten})).sort((a,b) => b.val - a.val);
     const sortedByThrills = [...players].map(p => ({name: p, val: stats[p].thrills})).sort((a,b) => b.val - a.val);
 
-    const awards = [
+    // DUO Sorteringen
+    const sortedByDuoWins = [...duoRankingStats].sort((a,b) => b.wins - a.wins);
+    const sortedByDuoLosses = [...duoRankingStats].sort((a,b) => b.losses - a.losses);
+    const sortedByDuoPerc = [...duoRankingStats].filter(d => d.total >= 2).sort((a,b) => b.perc - a.perc || b.wins - a.wins);
+    const sortedByDuoBagels = [...duoRankingStats].sort((a,b) => b.bagelsG - a.bagelsG);
+    const sortedByDuoThrills = [...duoRankingStats].sort((a,b) => b.thrills - a.thrills);
+
+    const soloAwards = [
         { 
-            id: 'koning', icon: '👑', label: 'De Koning (Meeste Winst)', 
+            id: 's_koning', icon: '👑', label: 'De Koning (Winst)', 
             check: () => hasPlayed ? ranking[0].name : null,
             headers: ['#', 'Speler', 'Winst', 'Saldo'],
             getRows: () => ranking.map((r, i) => [i+1, r.name, r.wins, (r.saldo>0?'+':'')+r.saldo])
         },
         { 
-            id: 'haai', icon: '🦈', label: 'De Haai (Beste Saldo)', 
+            id: 's_haai', icon: '🦈', label: 'De Haai (Saldo)', 
             check: () => hasPlayed ? `${[...ranking].sort((a,b) => b.saldo - a.saldo)[0].name} (+${[...ranking].sort((a,b) => b.saldo - a.saldo)[0].saldo})` : null,
             headers: ['#', 'Speler', 'Saldo', 'Winst'],
             getRows: () => [...ranking].sort((a,b) => b.saldo - a.saldo).map((r, i) => [i+1, r.name, (r.saldo>0?'+':'')+r.saldo, r.wins])
         },
         { 
-            id: 'muur', icon: '🧱', label: 'De Muur (Minste Tegen per Match)', 
+            id: 's_muur', icon: '🧱', label: 'De Muur (Tegengoals)', 
             check: () => hasPlayed ? `${sortedByMuur[0].name} (${(sortedByMuur[0].gamesLost/sortedByMuur[0].games).toFixed(1)}/m)` : null,
             headers: ['#', 'Speler', 'Gem. Tegen', 'Totaal Tegen'],
             getRows: () => sortedByMuur.map((r, i) => [i+1, r.name, (r.gamesLost/r.games).toFixed(2), r.gamesLost])
         },
         { 
-            id: 'schietschijf', icon: '🎯', label: 'Schietschijf (Meeste Tegen Totaal)', 
+            id: 's_schiet', icon: '🎯', label: 'Schietschijf', 
             check: () => hasPlayed ? `${sortedBySchietschijf[0].name} (${sortedBySchietschijf[0].gamesLost})` : null,
             headers: ['#', 'Speler', 'Totaal Tegen', 'Matches'],
             getRows: () => sortedBySchietschijf.map((r, i) => [i+1, r.name, r.gamesLost, r.games])
         },
         { 
-            id: 'streakwin', icon: '🔥', label: 'On Fire (Win Streak)', 
+            id: 's_fire', icon: '🔥', label: 'On Fire (Win Streak)', 
             check: () => sortedByStreakWin[0].val >= 2 ? `${sortedByStreakWin[0].name} (${sortedByStreakWin[0].val})` : null,
-            headers: ['#', 'Speler', 'Max Streak', 'Huidige Streak'],
+            headers: ['#', 'Speler', 'Max Streak', 'Huidige'],
             getRows: () => sortedByStreakWin.map((r, i) => [i+1, r.name, r.val, playerStreaks[r.name].currentWin])
         },
         { 
-            id: 'streakloss', icon: '🧊', label: 'Pechvogel (Verlies Streak)', 
+            id: 's_pech', icon: '🧊', label: 'Pechvogel (Loss Streak)', 
             check: () => sortedByStreakLoss[0].val >= 2 ? `${sortedByStreakLoss[0].name} (${sortedByStreakLoss[0].val})` : null,
-            headers: ['#', 'Speler', 'Max Streak', 'Huidige Streak'],
+            headers: ['#', 'Speler', 'Max Streak', 'Huidige'],
             getRows: () => sortedByStreakLoss.map((r, i) => [i+1, r.name, r.val, playerStreaks[r.name].currentLoss])
         },
         { 
-            id: 'bakker', icon: '🥯', label: 'De Bakker (6-0 Winst)', 
+            id: 's_bakker', icon: '🥯', label: 'De Bakker (6-0 Winst)', 
             check: () => sortedByBagelG[0].val > 0 ? `${sortedByBagelG[0].name} (${sortedByBagelG[0].val}x)` : null,
             headers: ['#', 'Speler', 'Uitgedeeld (x)', ''],
             getRows: () => sortedByBagelG.filter(r=>r.val>0).map((r, i) => [i+1, r.name, r.val, '-'])
         },
         { 
-            id: 'bagel', icon: '🍩', label: 'Bagel Eter (6-0 Verlies)', 
-            check: () => sortedByBagelE[0].val > 0 ? `${sortedByBagelE[0].name} (${sortedByBagelE[0].val}x)` : null,
-            headers: ['#', 'Speler', 'Opgegeten (x)', ''],
-            getRows: () => sortedByBagelE.filter(r=>r.val>0).map((r, i) => [i+1, r.name, r.val, '-'])
-        },
-        { 
-            id: 'thrill', icon: '🎢', label: 'Spanningszoeker (6-5 Winst)', 
+            id: 's_thrill', icon: '🎢', label: 'Spanningszoeker (6-5)', 
             check: () => sortedByThrills[0].val > 0 ? `${sortedByThrills[0].name} (${sortedByThrills[0].val}x)` : null,
             headers: ['#', 'Speler', 'Spannende Winst (x)', ''],
             getRows: () => sortedByThrills.filter(r=>r.val>0).map((r, i) => [i+1, r.name, r.val, '-'])
+        }
+    ];
+
+    const duoAwards = [
+        { 
+            id: 'd_goud', icon: '🤝', label: 'Gouden Duo (Winst)', 
+            check: () => sortedByDuoWins[0].wins > 0 ? `${sortedByDuoWins[0].duo} (${sortedByDuoWins[0].wins}w)` : null,
+            headers: ['#', 'Duo', 'Winst', 'Matches'],
+            getRows: () => sortedByDuoWins.filter(r=>r.wins>0).map((r, i) => [i+1, r.duo, r.wins, r.total])
         },
         { 
-            id: 'duo', icon: '🤝', label: 'Gouden Duo (Meeste Winst)', 
-            check: () => duoRanking.length > 0 && duoRanking[0].w > 0 ? `${duoRanking[0].duo} (${duoRanking[0].w}w)` : null,
-            headers: ['#', 'Duo', 'Winst', 'Win %'],
-            getRows: () => duoRanking.filter(r=>r.w>0).slice(0, 10).map((r, i) => [i+1, r.duo, r.w, r.perc + '%'])
+            id: 'd_drama', icon: '💔', label: 'Dramatisch Duo (Verlies)', 
+            check: () => sortedByDuoLosses[0].losses > 0 ? `${sortedByDuoLosses[0].duo} (${sortedByDuoLosses[0].losses}v)` : null,
+            headers: ['#', 'Duo', 'Verlies', 'Matches'],
+            getRows: () => sortedByDuoLosses.filter(r=>r.losses>0).map((r, i) => [i+1, r.duo, r.losses, r.total])
+        },
+        { 
+            id: 'd_syn', icon: '🧠', label: 'Synergie (Hoogste Win %, min 2m)', 
+            check: () => sortedByDuoPerc.length > 0 && sortedByDuoPerc[0].wins > 0 ? `${sortedByDuoPerc[0].duo} (${sortedByDuoPerc[0].perc}%)` : null,
+            headers: ['#', 'Duo', 'Win %', 'W-V'],
+            getRows: () => sortedByDuoPerc.filter(r=>r.wins>0).map((r, i) => [i+1, r.duo, r.perc+'%', `${r.wins}-${r.losses}`])
+        },
+        { 
+            id: 'd_slager', icon: '🔪', label: 'De Slagers (6-0 Samen)', 
+            check: () => sortedByDuoBagels[0].bagelsG > 0 ? `${sortedByDuoBagels[0].duo} (${sortedByDuoBagels[0].bagelsG}x)` : null,
+            headers: ['#', 'Duo', 'Bagels Gegeven', ''],
+            getRows: () => sortedByDuoBagels.filter(r=>r.bagelsG>0).map((r, i) => [i+1, r.duo, r.bagelsG, '-'])
+        },
+        { 
+            id: 'd_hart', icon: '🚑', label: 'Hartaanval Duo (6-5 Samen)', 
+            check: () => sortedByDuoThrills[0].thrills > 0 ? `${sortedByDuoThrills[0].duo} (${sortedByDuoThrills[0].thrills}x)` : null,
+            headers: ['#', 'Duo', 'Zweetmatchen', ''],
+            getRows: () => sortedByDuoThrills.filter(r=>r.thrills>0).map((r, i) => [i+1, r.duo, r.thrills, '-'])
         }
     ];
 
     window.hofData = {};
-    let statsHTML = '';
     
-    awards.forEach(a => {
-        const val = a.check();
-        const isLocked = !val;
-        const displayVal = isLocked ? 'NOG NIET BEHAALD' : val;
-        const lockedClass = isLocked ? 'locked-stat' : '';
-        const onClickAction = isLocked ? '' : `onclick="openHofModal('${a.id}')"`;
+    // Functie om de HTML per sectie te genereren
+    const renderAwards = (awardArray, containerId) => {
+        let html = '';
+        awardArray.forEach(a => {
+            const val = a.check();
+            const isLocked = !val;
+            const displayVal = isLocked ? 'NOG NIET BEHAALD' : val;
+            const lockedClass = isLocked ? 'locked-stat' : '';
+            const onClickAction = isLocked ? '' : `onclick="openHofModal('${a.id}')"`;
 
-        if(!isLocked) {
-            window.hofData[a.id] = { title: a.label, headers: a.headers, rows: a.getRows() };
-        }
+            if(!isLocked) window.hofData[a.id] = { title: a.label, headers: a.headers, rows: a.getRows() };
 
-        statsHTML += `
-            <div class="stat-card ${lockedClass}" ${onClickAction} style="cursor: ${isLocked ? 'default' : 'pointer'};">
-                <div class="stat-icon">${a.icon}</div>
-                <div class="stat-info">
-                    <span class="stat-label">${a.label}</span>
-                    <span class="stat-value" style="font-size: ${isLocked ? '11px' : '16px'}; color: ${isLocked ? 'var(--text-muted)' : 'white'};">${displayVal}</span>
+            html += `
+                <div class="stat-card ${lockedClass}" ${onClickAction} style="cursor: ${isLocked ? 'default' : 'pointer'};">
+                    <div class="stat-icon">${a.icon}</div>
+                    <div class="stat-info">
+                        <span class="stat-label">${a.label}</span>
+                        <span class="stat-value" style="font-size: ${isLocked ? 'clamp(11px, 3vw, 13px)' : 'clamp(15px, 4vw, 18px)'}; color: ${isLocked ? 'var(--text-muted)' : 'white'};">${displayVal}</span>
+                    </div>
                 </div>
-            </div>
-        `;
-    });
-    document.getElementById('stats-grid-container').innerHTML = statsHTML;
+            `;
+        });
+        document.getElementById(containerId).innerHTML = html;
+    };
+
+    renderAwards(soloAwards, 'stats-grid-solo');
+    renderAwards(duoAwards, 'stats-grid-duo');
 }
 
+// 6. HALL OF FAME MODAL LOGICA
 function openHofModal(id) {
     const data = window.hofData[id];
     if(!data) return;
@@ -270,11 +319,14 @@ function closeHofModal() {
     document.getElementById('hof-modal').classList.remove('active');
 }
 
+// 7. BEWERK / UPDATE SYSTEEM SCORES
 function selectScore(team, value) {
     if (team === 't1') selectedScoreT1 = value;
     if (team === 't2') selectedScoreT2 = value;
+
     const bubbles = document.querySelectorAll(`#bubbles-${team} .score-bubble`);
     bubbles.forEach(b => b.classList.remove('selected'));
+    
     bubbles[value].classList.add('selected');
 }
 
@@ -300,7 +352,9 @@ function clearScore() {
     document.querySelectorAll('.score-bubble').forEach(b => b.classList.remove('selected'));
 }
 
-function closeModal() { document.getElementById('score-modal').classList.remove('active'); }
+function closeModal() {
+    document.getElementById('score-modal').classList.remove('active');
+}
 
 async function saveScore() {
     let updateData = {};
@@ -309,10 +363,17 @@ async function saveScore() {
     } else {
         updateData = { score_t1: selectedScoreT1, score_t2: selectedScoreT2, tussenstand_t1: null, tussenstand_t2: null };
     }
+
     const { error } = await db.from('matches').update(updateData).eq('id', currentEditMatchId);
-    if (!error) { closeModal(); init(); } else { alert("Fout bij opslaan: " + error.message); }
+    if (!error) {
+        closeModal(); init(); 
+    } else {
+        alert("Fout bij opslaan: " + error.message);
+    }
 }
 
-function formatDate(dateString) { return new Date(dateString).toLocaleDateString('nl-BE', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase(); }
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleDateString('nl-BE', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+}
 
 init();
