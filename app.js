@@ -1,8 +1,7 @@
 // 1. KOPPEL SUPABASE
 const SUPABASE_URL = 'https://rwtqrxaabkcueuboqbju.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_hu5zlS1aivNht1gzRgbuww_WIbCr2eL'; 
+const SUPABASE_KEY = 'PLAK_HIER_JOUW_PUBLISHABLE_API_KEY_UIT_JE_SCREENSHOT'; 
 
-// De "createClient" moet met hoofdletters uit de window-library gehaald worden:
 const { createClient } = window.supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -24,7 +23,6 @@ async function init() {
 function buildDashboard(matches) {
     const playedMatches = matches.filter(m => m.score_t1 !== null && m.score_t2 !== null);
     
-    // Zoek welke week de volgende is (de eerste waar nog geen eindscore voor is)
     const nextMatchRow = matches.find(m => m.score_t1 === null);
     const currentWeek = nextMatchRow ? nextMatchRow.week : 30;
     
@@ -34,9 +32,8 @@ function buildDashboard(matches) {
     calculateAndRenderLeaderboards(playedMatches);
 }
 
-// 3. WIDGETS RENDERING (Verleden / Volgende match incl. Edit knoppen en Live Tussenstand)
+// 3. WIDGETS RENDERING
 function renderMatchdayWidgets(matches, currentWeek) {
-    // Afgelopen Week (of huidige als alles klaar is)
     const pastWeek = currentWeek > 1 ? currentWeek - 1 : 1;
     const pastMatches = matches.filter(m => m.week === pastWeek);
     
@@ -52,7 +49,6 @@ function renderMatchdayWidgets(matches, currentWeek) {
     pastHTML += `</div>`;
     document.getElementById('past-match-widget').innerHTML = pastHTML;
 
-    // Volgende Week
     const nextWeekMatches = matches.filter(m => m.week === currentWeek);
     if(nextWeekMatches.length > 0) {
         let nextHTML = `
@@ -71,15 +67,11 @@ function renderMatchdayWidgets(matches, currentWeek) {
 
 function buildMatchRow(m) {
     const isPlayed = m.score_t1 !== null;
-    const isLive = m.tussenstand_t1 !== null && !isPlayed;
-    
     let scoreDisplay = `<span class="vs">VS</span>`;
     
     if (isPlayed) {
         const t1Wins = m.score_t1 > m.score_t2;
         scoreDisplay = `<span class="score ${t1Wins ? 'win-score' : 'lose-score'}">${m.score_t1} - ${m.score_t2}</span>`;
-    } else if (isLive) {
-        scoreDisplay = `<span class="score win-score" style="border-color:var(--royal-gold); color:var(--royal-gold);">${m.tussenstand_t1} - ${m.tussenstand_t2}</span><span class="live-badge">LIVE</span>`;
     }
 
     return `
@@ -87,7 +79,7 @@ function buildMatchRow(m) {
             <span class="team ${isPlayed && m.score_t1 > m.score_t2 ? 'win' : ''}">${m.t1_p1} & ${m.t1_p2}</span>
             ${scoreDisplay}
             <span class="team ${isPlayed && m.score_t2 > m.score_t1 ? 'win' : ''}">${m.t2_p1} & ${m.t2_p2}</span>
-            <button class="edit-btn" onclick="openModal(${m.id}, '${m.t1_p1} & ${m.t1_p2}', '${m.t2_p1} & ${m.t2_p2}', ${m.score_t1}, ${m.score_t2}, ${m.tussenstand_t1}, ${m.tussenstand_t2})">✎</button>
+            <button class="edit-btn" onclick="openModal(${m.id}, '${m.t1_p1} & ${m.t1_p2}', '${m.t2_p1} & ${m.t2_p2}', ${m.score_t1}, ${m.score_t2})">✎</button>
         </div>
     `;
 }
@@ -111,7 +103,6 @@ function calculateAndRenderLeaderboards(matches) {
 
         const t1Wins = m.score_t1 > m.score_t2;
 
-        // T1 spelers updaten
         t1.forEach(p => {
             stats[p].games++;
             stats[p].gamesWon += m.score_t1;
@@ -119,7 +110,6 @@ function calculateAndRenderLeaderboards(matches) {
             if (t1Wins) stats[p].wins++; else stats[p].losses++;
         });
 
-        // T2 spelers updaten
         t2.forEach(p => {
             stats[p].games++;
             stats[p].gamesWon += m.score_t2;
@@ -127,19 +117,16 @@ function calculateAndRenderLeaderboards(matches) {
             if (!t1Wins) stats[p].wins++; else stats[p].losses++;
         });
 
-        // Duos updaten
         if (t1Wins) { duoStats[d1].wins++; duoStats[d2].losses++; } 
         else { duoStats[d2].wins++; duoStats[d1].losses++; }
     });
 
-    // Sorteren Individueel
     const ranking = Object.keys(stats).map(p => ({
         name: p,
         ...stats[p],
         saldo: stats[p].gamesWon - stats[p].gamesLost
     })).sort((a, b) => b.wins - a.wins || b.saldo - a.saldo);
 
-    // Render Individueel
     let indHTML = '';
     ranking.forEach((r, idx) => {
         const sign = r.saldo > 0 ? '+' : '';
@@ -155,7 +142,6 @@ function calculateAndRenderLeaderboards(matches) {
     });
     document.getElementById('individual-leaderboard').innerHTML = indHTML;
 
-    // Duo klassement
     const duoRanking = Object.keys(duoStats).map(d => {
         const total = duoStats[d].wins + duoStats[d].losses;
         return {
@@ -173,7 +159,6 @@ function calculateAndRenderLeaderboards(matches) {
     });
     document.getElementById('duo-leaderboard').innerHTML = duoHTML;
 
-    // Fun stats invullen
     if(ranking[0].games > 0) {
         document.getElementById('stats-grid-container').innerHTML = `
             <div class="stat-card"><div class="stat-icon">👑</div><div class="stat-info"><span class="stat-label">Huidige Leider</span><span class="stat-value">${ranking[0].name}</span></div></div>
@@ -185,19 +170,15 @@ function calculateAndRenderLeaderboards(matches) {
     }
 }
 
-// 5. BEWERK / UPDATE SYSTEEM (Supabase Schrijven)
-function openModal(id, t1, t2, sc1, sc2, tus1, tus2) {
+// 5. BEWERK / UPDATE SYSTEEM
+function openModal(id, t1, t2, sc1, sc2) {
     currentEditMatchId = id;
     document.getElementById('modal-match-id').innerText = `#${id}`;
     document.getElementById('modal-t1-names').innerText = t1;
     document.getElementById('modal-t2-names').innerText = t2;
     
-    // Als er een tussenstand is, vul die in, anders de score
-    document.getElementById('input-t1').value = sc1 !== null ? sc1 : (tus1 !== null ? tus1 : '');
-    document.getElementById('input-t2').value = sc2 !== null ? sc2 : (tus2 !== null ? tus2 : '');
-    
-    // Als het een final score heeft, vink tussenstand UIT
-    document.getElementById('is-tussenstand').checked = (sc1 === null && (tus1 !== null || (sc1 === null && sc2 === null)));
+    document.getElementById('input-t1').value = sc1 !== null ? sc1 : '';
+    document.getElementById('input-t2').value = sc2 !== null ? sc2 : '';
     
     document.getElementById('score-modal').classList.add('active');
 }
@@ -209,25 +190,21 @@ function closeModal() {
 async function saveScore() {
     const s1 = document.getElementById('input-t1').value;
     const s2 = document.getElementById('input-t2').value;
-    const isTussenstand = document.getElementById('is-tussenstand').checked;
     
-    if (s1 === '' || s2 === '') return; // Voorkom lege opslag
-
-    const val1 = parseInt(s1);
-    const val2 = parseInt(s2);
-
     let updateData = {};
-    if (isTussenstand) {
-        updateData = { tussenstand_t1: val1, tussenstand_t2: val2, score_t1: null, score_t2: null };
+    
+    // Als de velden leeg worden gemaakt, resetten we de score
+    if (s1 === '' || s2 === '') {
+        updateData = { score_t1: null, score_t2: null, tussenstand_t1: null, tussenstand_t2: null };
     } else {
-        updateData = { score_t1: val1, score_t2: val2, tussenstand_t1: null, tussenstand_t2: null };
+        updateData = { score_t1: parseInt(s1), score_t2: parseInt(s2), tussenstand_t1: null, tussenstand_t2: null };
     }
 
     const { error } = await db.from('matches').update(updateData).eq('id', currentEditMatchId);
     
     if (!error) {
         closeModal();
-        init(); // Herlaad alles live!
+        init(); 
     } else {
         alert("Fout bij opslaan: " + error.message);
     }
@@ -238,5 +215,4 @@ function formatDate(dateString) {
     return d.toLocaleDateString('nl-BE', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
 }
 
-// Start app!
 init();
