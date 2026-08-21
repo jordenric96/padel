@@ -1,6 +1,6 @@
 // 1. KOPPEL SUPABASE
 const SUPABASE_URL = 'https://rwtqrxaabkcueuboqbju.supabase.co';
-const SUPABASE_KEY = 'PLAK_HIER_JOUW_PUBLISHABLE_API_KEY_UIT_JE_SCREENSHOT'; 
+const SUPABASE_KEY = 'sb_publishable_hu5zlS1aivNht1gzRgbuww_WIbCr2eL'; 
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
