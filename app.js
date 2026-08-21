@@ -29,7 +29,7 @@ function buildDashboard(matches) {
     document.getElementById('status-text').innerText = `Status voor aanvang van Week ${currentWeek}`;
 
     renderMatchdayWidgets(matches, currentWeek);
-    calculateAndRenderLeaderboards(playedMatches);
+    calculateAndRenderLeaderboards(matches, playedMatches);
 }
 
 // 3. WIDGETS RENDERING
@@ -84,15 +84,23 @@ function buildMatchRow(m) {
     `;
 }
 
-// 4. STATISTIEKEN BEREKENEN
-function calculateAndRenderLeaderboards(matches) {
+// 4. STATISTIEKEN BEREKENEN & HALL OF FAME
+function calculateAndRenderLeaderboards(allMatches, playedMatches) {
     const players = ['Jorden', 'Yarni', 'Lars', 'Vince', 'Kristof', 'Sammy'];
     let stats = {};
-    players.forEach(p => stats[p] = { games: 0, wins: 0, losses: 0, gamesWon: 0, gamesLost: 0 });
+    let playerStreaks = {};
+    let bagelKings = new Set();
+    let bagelEaters = new Set();
+    let thrillSeekers = new Set();
+    
+    players.forEach(p => {
+        stats[p] = { games: 0, wins: 0, losses: 0, gamesWon: 0, gamesLost: 0 };
+        playerStreaks[p] = { currentWin: 0, maxWin: 0, currentLoss: 0, maxLoss: 0 };
+    });
 
     let duoStats = {};
 
-    matches.forEach(m => {
+    playedMatches.forEach(m => {
         const t1 = [m.t1_p1, m.t1_p2].sort();
         const t2 = [m.t2_p1, m.t2_p2].sort();
         const d1 = t1.join(' & ');
@@ -103,22 +111,48 @@ function calculateAndRenderLeaderboards(matches) {
 
         const t1Wins = m.score_t1 > m.score_t2;
 
+        // T1 spelers updaten
         t1.forEach(p => {
             stats[p].games++;
             stats[p].gamesWon += m.score_t1;
             stats[p].gamesLost += m.score_t2;
-            if (t1Wins) stats[p].wins++; else stats[p].losses++;
+            if (t1Wins) {
+                stats[p].wins++;
+                playerStreaks[p].currentWin++; playerStreaks[p].currentLoss = 0;
+                if(playerStreaks[p].currentWin > playerStreaks[p].maxWin) playerStreaks[p].maxWin = playerStreaks[p].currentWin;
+            } else {
+                stats[p].losses++;
+                playerStreaks[p].currentLoss++; playerStreaks[p].currentWin = 0;
+                if(playerStreaks[p].currentLoss > playerStreaks[p].maxLoss) playerStreaks[p].maxLoss = playerStreaks[p].currentLoss;
+            }
         });
 
+        // T2 spelers updaten
         t2.forEach(p => {
             stats[p].games++;
             stats[p].gamesWon += m.score_t2;
             stats[p].gamesLost += m.score_t1;
-            if (!t1Wins) stats[p].wins++; else stats[p].losses++;
+            if (!t1Wins) {
+                stats[p].wins++;
+                playerStreaks[p].currentWin++; playerStreaks[p].currentLoss = 0;
+                if(playerStreaks[p].currentWin > playerStreaks[p].maxWin) playerStreaks[p].maxWin = playerStreaks[p].currentWin;
+            } else {
+                stats[p].losses++;
+                playerStreaks[p].currentLoss++; playerStreaks[p].currentWin = 0;
+                if(playerStreaks[p].currentLoss > playerStreaks[p].maxLoss) playerStreaks[p].maxLoss = playerStreaks[p].currentLoss;
+            }
         });
 
+        // Duos updaten
         if (t1Wins) { duoStats[d1].wins++; duoStats[d2].losses++; } 
         else { duoStats[d2].wins++; duoStats[d1].losses++; }
+
+        // Speciale Matches (Bagels & Spannend)
+        if (m.score_t1 === 6 && m.score_t2 === 0) { t1.forEach(p => bagelKings.add(p)); t2.forEach(p => bagelEaters.add(p)); }
+        if (m.score_t2 === 6 && m.score_t1 === 0) { t2.forEach(p => bagelKings.add(p)); t1.forEach(p => bagelEaters.add(p)); }
+        if ((m.score_t1 === 6 && m.score_t2 === 5) || (m.score_t1 === 5 && m.score_t2 === 6)) {
+            if (t1Wins) t1.forEach(p => thrillSeekers.add(p)); else t2.forEach(p => thrillSeekers.add(p));
+        }
     });
 
     const ranking = Object.keys(stats).map(p => ({
@@ -127,6 +161,9 @@ function calculateAndRenderLeaderboards(matches) {
         saldo: stats[p].gamesWon - stats[p].gamesLost
     })).sort((a, b) => b.wins - a.wins || b.saldo - a.saldo);
 
+    // ============================
+    // LEADERBOARDS VULLEN
+    // ============================
     let indHTML = '';
     ranking.forEach((r, idx) => {
         const sign = r.saldo > 0 ? '+' : '';
@@ -145,9 +182,7 @@ function calculateAndRenderLeaderboards(matches) {
     const duoRanking = Object.keys(duoStats).map(d => {
         const total = duoStats[d].wins + duoStats[d].losses;
         return {
-            duo: d,
-            w: duoStats[d].wins,
-            l: duoStats[d].losses,
+            duo: d, w: duoStats[d].wins, l: duoStats[d].losses,
             perc: total === 0 ? 0 : Math.round((duoStats[d].wins / total) * 100)
         };
     }).sort((a, b) => b.perc - a.perc || b.w - a.w).slice(0,5);
@@ -159,15 +194,74 @@ function calculateAndRenderLeaderboards(matches) {
     });
     document.getElementById('duo-leaderboard').innerHTML = duoHTML;
 
-    if(ranking[0].games > 0) {
-        document.getElementById('stats-grid-container').innerHTML = `
-            <div class="stat-card"><div class="stat-icon">👑</div><div class="stat-info"><span class="stat-label">Huidige Leider</span><span class="stat-value">${ranking[0].name}</span></div></div>
-            <div class="stat-card"><div class="stat-icon">🦈</div><div class="stat-info"><span class="stat-label">Beste Saldo</span><span class="stat-value">${ranking[0].name} (+${ranking[0].saldo})</span></div></div>
-            <div class="stat-card"><div class="stat-icon">🧱</div><div class="stat-info"><span class="stat-label">Meeste Tegengoals</span><span class="stat-value">${[...ranking].sort((a,b)=>b.gamesLost - a.gamesLost)[0].name}</span></div></div>
+    // ============================
+    // HALL OF FAME (De 12 Awards)
+    // ============================
+    let bestWinStreak = 0; let bestWinStreakPlayers = [];
+    let worstLossStreak = 0; let worstLossStreakPlayers = [];
+    
+    players.forEach(p => {
+        if(playerStreaks[p].maxWin > bestWinStreak) { bestWinStreak = playerStreaks[p].maxWin; bestWinStreakPlayers = [p]; } 
+        else if (playerStreaks[p].maxWin === bestWinStreak && bestWinStreak > 0) { bestWinStreakPlayers.push(p); }
+
+        if(playerStreaks[p].maxLoss > worstLossStreak) { worstLossStreak = playerStreaks[p].maxLoss; worstLossStreakPlayers = [p]; } 
+        else if (playerStreaks[p].maxLoss === worstLossStreak && worstLossStreak > 0) { worstLossStreakPlayers.push(p); }
+    });
+
+    const hasPlayed = ranking[0].games > 0;
+    
+    const awards = [
+        { icon: '👑', label: 'De Koning (Huidige Leider)', check: () => hasPlayed ? ranking[0].name : null },
+        { icon: '🦈', label: 'De Haai (Beste Saldo)', check: () => hasPlayed ? `${ranking[0].name} (+${ranking[0].saldo})` : null },
+        { icon: '🧱', label: 'De Muur (Minste Tegengoals)', check: () => {
+            if(!hasPlayed) return null;
+            const muur = [...ranking].filter(r=>r.games > 0).sort((a,b) => (a.gamesLost/a.games) - (b.gamesLost/b.games))[0];
+            return `${muur.name} (${(muur.gamesLost/muur.games).toFixed(1)}/g)`;
+        }},
+        { icon: '🎯', label: 'Schietschijf (Meeste Tegen)', check: () => {
+            if(!hasPlayed) return null;
+            const schietschijf = [...ranking].filter(r=>r.games > 0).sort((a,b) => b.gamesLost - a.gamesLost)[0];
+            return `${schietschijf.name} (${schietschijf.gamesLost})`;
+        }},
+        { icon: '🔥', label: 'On Fire (Win Streak)', check: () => bestWinStreak >= 2 ? `${bestWinStreakPlayers.join(', ')} (${bestWinStreak})` : null },
+        { icon: '🧊', label: 'Pechvogel (Verlies Streak)', check: () => worstLossStreak >= 2 ? `${worstLossStreakPlayers.join(', ')} (${worstLossStreak})` : null },
+        { icon: '🥯', label: 'De Bakker (6-0 Winst)', check: () => bagelKings.size > 0 ? Array.from(bagelKings).join(', ') : null },
+        { icon: '🍩', label: 'Bagel Eter (6-0 Verlies)', check: () => bagelEaters.size > 0 ? Array.from(bagelEaters).join(', ') : null },
+        { icon: '🎢', label: 'Spanningszoeker (6-5 Winst)', check: () => thrillSeekers.size > 0 ? Array.from(thrillSeekers).join(', ') : null },
+        { icon: '🤝', label: 'Gouden Duo (Meeste Winst)', check: () => {
+            if(!hasPlayed) return null;
+            const bestDuo = Object.keys(duoStats).filter(d => duoStats[d].wins > 0).sort((a,b) => duoStats[b].wins - duoStats[a].wins)[0];
+            return bestDuo ? `${bestDuo} (${duoStats[bestDuo].wins}w)` : null;
+        }},
+        { icon: '🦅', label: 'Eerste Bloed (Allereerste Winst)', check: () => {
+            if(playedMatches.length === 0) return null;
+            const m = playedMatches[0];
+            return m.score_t1 > m.score_t2 ? `${m.t1_p1} & ${m.t1_p2}` : `${m.t2_p1} & ${m.t2_p2}`;
+        }},
+        { icon: '💯', label: 'Flawless (100% Winrate, min 3 matchen)', check: () => {
+            const flawless = ranking.filter(r => r.games >= 3 && r.wins === r.games);
+            return flawless.length > 0 ? flawless.map(f=>f.name).join(', ') : null;
+        }}
+    ];
+
+    let statsHTML = '';
+    awards.forEach(a => {
+        const val = a.check();
+        const isLocked = !val;
+        const displayVal = isLocked ? 'NOG NIET BEHAALD' : val;
+        const lockedClass = isLocked ? 'locked-stat' : '';
+        
+        statsHTML += `
+            <div class="stat-card ${lockedClass}">
+                <div class="stat-icon">${a.icon}</div>
+                <div class="stat-info">
+                    <span class="stat-label">${a.label}</span>
+                    <span class="stat-value" style="font-size: ${isLocked ? 'clamp(12px, 3vw, 14px)' : 'clamp(18px, 5vw, 22px)'}; color: ${isLocked ? 'var(--text-muted)' : 'white'};">${displayVal}</span>
+                </div>
+            </div>
         `;
-    } else {
-        document.getElementById('stats-grid-container').innerHTML = `<p style="color:var(--text-muted);">Speel eerst een match om de Hall of Fame te vullen!</p>`;
-    }
+    });
+    document.getElementById('stats-grid-container').innerHTML = statsHTML;
 }
 
 // 5. BEWERK / UPDATE SYSTEEM
@@ -193,7 +287,6 @@ async function saveScore() {
     
     let updateData = {};
     
-    // Als de velden leeg worden gemaakt, resetten we de score
     if (s1 === '' || s2 === '') {
         updateData = { score_t1: null, score_t2: null, tussenstand_t1: null, tussenstand_t2: null };
     } else {
