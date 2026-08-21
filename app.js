@@ -2,7 +2,8 @@
 const SUPABASE_URL = 'https://rwtqrxaabkcueuboqbju.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_hu5zlS1aivNht1gzRgbuww_WIbCr2eL'; 
 
-const { createClient } = supabase;
+// De "createClient" moet met hoofdletters uit de window-library gehaald worden:
+const { createClient } = window.supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentEditMatchId = null;
