@@ -5,176 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Padel Competitie - Dashboard</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Supabase Inladen -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-brand">🎾 PADEL LEAGUE</div>
         <ul class="nav-links">
             <li><a href="index.html" class="active">Dashboard</a></li>
-            <li><a href="matchen.html">Kalender</a></li>
+            <!-- Kalender html mag je later aanpassen, voor nu werkt het dashboard! -->
         </ul>
     </nav>
 
     <div class="container dashboard">
         <header class="dash-header">
             <h1>SEIZOEN OVERZICHT</h1>
-            <p class="subtitle">Status na Speeldag 1</p>
+            <p class="subtitle" id="status-text">Status laden...</p>
         </header>
 
-        <!-- Matchday Widgets -->
+        <!-- Matchday Widgets (Worden ingevuld door JS) -->
         <div class="matchday-container">
-            <div class="card matchday-card past-match">
-                <div class="matchday-header">
-                    <h2>⏪ AFGELOPEN MATCHES (W1)</h2>
-                    <span class="matchday-date">26 AUG 2026</span>
-                </div>
-                <div class="matchday-content">
-                    <p class="rust-info">RUST: <span class="badge-rest">Jorden & Boma</span></p>
-                    <div class="result-row">
-                        <span class="team win">Kristof & Lars</span>
-                        <span class="score win-score">6 - 4</span>
-                        <span class="team lose">Vince & Yarni</span>
-                    </div>
-                    <div class="result-row">
-                        <span class="team lose">Kristof & Vince</span>
-                        <span class="score lose-score">3 - 6</span>
-                        <span class="team win">Lars & Yarni</span>
-                    </div>
-                </div>
+            <div class="card matchday-card past-match" id="past-match-widget">
+                <!-- Data komt hier -->
             </div>
-
-            <div class="card matchday-card next-match">
-                <div class="matchday-header">
-                    <h2>⏭️ VOLGENDE MATCHES (W2)</h2>
-                    <span class="matchday-date">02 SEP 2026</span>
-                </div>
-                <div class="matchday-content">
-                    <p class="rust-info">RUST: <span class="badge-rest">Yarni & Vince</span></p>
-                    <div class="upcoming-row">
-                        <span class="team">Boma & Jorden</span>
-                        <span class="vs">VS</span>
-                        <span class="team">Kristof & Lars</span>
-                    </div>
-                    <div class="upcoming-row">
-                        <span class="team">Boma & Kristof</span>
-                        <span class="vs">VS</span>
-                        <span class="team">Jorden & Lars</span>
-                    </div>
-                </div>
+            <div class="card matchday-card next-match" id="next-match-widget">
+                <!-- Data komt hier -->
             </div>
         </div>
 
-        <!-- Fun Stats Grid -->
         <h2 class="section-title">📊 HALL OF FAME</h2>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">🔥</div>
-                <div class="stat-info">
-                    <span class="stat-label">Beste Win Streak</span>
-                    <span class="stat-value">Lars (2)</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🧊</div>
-                <div class="stat-info">
-                    <span class="stat-label">Slechtste Streak</span>
-                    <span class="stat-value">Vince (2)</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">👑</div>
-                <div class="stat-info">
-                    <span class="stat-label">MVP (Winst %)</span>
-                    <span class="stat-value">Lars (100%)</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🦈</div>
-                <div class="stat-info">
-                    <span class="stat-label">Beste Saldo</span>
-                    <span class="stat-value">Lars (+5)</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🥯</div>
-                <div class="stat-info">
-                    <span class="stat-label">Bagel King (6-0)</span>
-                    <span class="stat-value">N/A</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🧱</div>
-                <div class="stat-info">
-                    <span class="stat-label">De Muur (Minste Tegen)</span>
-                    <span class="stat-value">Yarni (3)</span>
-                </div>
-            </div>
+        <div class="stats-grid" id="stats-grid-container">
+            <!-- Stats komen hier live -->
         </div>
 
         <div class="leaderboards-container">
-            <!-- Individueel Klassement -->
             <div class="card leaderboard-card">
                 <h2>🏆 INDIVIDUEEL KLASSEMENT</h2>
                 <div class="table-responsive">
                     <table class="leaderboard-table">
                         <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Speler</th>
-                                <th>G</th>
-                                <th>W</th>
-                                <th>V</th>
-                                <th>Saldo</th>
-                            </tr>
+                            <tr><th>#</th><th>Speler</th><th>G</th><th>W</th><th>V</th><th>Saldo</th></tr>
                         </thead>
-                        <tbody>
-                            <tr class="rank-1">
-                                <td>1</td><td><strong>Lars</strong></td><td>2</td><td>2</td><td>0</td><td class="positive">+5 (12-7)</td>
-                            </tr>
-                            <tr class="rank-2">
-                                <td>2</td><td><strong>Kristof</strong></td><td>2</td><td>1</td><td>1</td><td class="negative">-1 (9-10)</td>
-                            </tr>
-                            <tr class="rank-3">
-                                <td>3</td><td><strong>Yarni</strong></td><td>2</td><td>1</td><td>1</td><td class="positive">+1 (10-9)</td>
-                            </tr>
-                            <tr>
-                                <td>4</td><td><strong>Vince</strong></td><td>2</td><td>0</td><td>2</td><td class="negative">-5 (7-12)</td>
-                            </tr>
-                            <tr>
-                                <td>5</td><td><strong>Jorden</strong></td><td>0</td><td>0</td><td>0</td><td class="neutral">0 (0-0)</td>
-                            </tr>
-                            <tr>
-                                <td>6</td><td><strong>Boma</strong></td><td>0</td><td>0</td><td>0</td><td class="neutral">0 (0-0)</td>
-                            </tr>
-                        </tbody>
+                        <tbody id="individual-leaderboard"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Duo Klassement -->
             <div class="card leaderboard-card duo-card">
                 <h2>🤝 DUO KLASSEMENT (TOP 5)</h2>
                 <div class="table-responsive">
                     <table class="leaderboard-table">
                         <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Duo</th>
-                                <th>W - V</th>
-                                <th>Win %</th>
-                            </tr>
+                            <tr><th>#</th><th>Duo</th><th>W - V</th><th>Win %</th></tr>
                         </thead>
-                        <tbody>
-                            <tr class="rank-1"><td>1</td><td><strong>Lars & Yarni</strong></td><td>1 - 0</td><td class="positive">100%</td></tr>
-                            <tr class="rank-2"><td>2</td><td><strong>Kristof & Lars</strong></td><td>1 - 0</td><td class="positive">100%</td></tr>
-                            <tr class="rank-3"><td>3</td><td><strong>Jorden & Boma</strong></td><td>0 - 0</td><td class="neutral">0%</td></tr>
-                            <tr><td>4</td><td><strong>Jorden & Yarni</strong></td><td>0 - 0</td><td class="neutral">0%</td></tr>
-                            <tr><td>5</td><td><strong>Jorden & Lars</strong></td><td>0 - 0</td><td class="neutral">0%</td></tr>
-                        </tbody>
+                        <tbody id="duo-leaderboard"></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Modaal venster voor het ingeven van scores & tussenstanden -->
+    <div class="modal-overlay" id="score-modal">
+        <div class="modal-content">
+            <h3 class="modal-title">Vul Score In</h3>
+            <p style="color:var(--text-muted); font-size:12px; margin-top:-15px; margin-bottom: 20px;">Match <span id="modal-match-id"></span></p>
+            
+            <div class="score-inputs">
+                <div class="score-group">
+                    <label id="modal-t1-names">Team 1</label>
+                    <input type="number" id="input-t1" placeholder="0">
+                </div>
+                <div style="font-family:'Oswald'; color:var(--royal-gold);">VS</div>
+                <div class="score-group">
+                    <label id="modal-t2-names">Team 2</label>
+                    <input type="number" id="input-t2" placeholder="0">
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="is-tussenstand" style="width:18px; height:18px;">
+                <label for="is-tussenstand" style="color:white; font-size:14px; font-weight:600;">Dit is een TUSSENSTAND (Match loopt nog)</label>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-close" onclick="closeModal()">Annuleren</button>
+                <button class="btn-save" onclick="saveScore()">Opslaan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Koppel je nieuwe JS script -->
+    <script src="app.js"></script>
 </body>
 </html>
