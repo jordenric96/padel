@@ -1,4 +1,3 @@
-// 1. KOPPEL SUPABASE
 const SUPABASE_URL = 'https://rwtqrxaabkcueuboqbju.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_hu5zlS1aivNht1gzRgbuww_WIbCr2eL'; 
 
@@ -9,7 +8,6 @@ let currentEditMatchId = null;
 let selectedScoreT1 = null;
 let selectedScoreT2 = null;
 
-// Slaat de ranking tabellen op voor de popups
 window.hofData = {}; 
 
 async function init() {
@@ -35,8 +33,6 @@ function buildDashboard(matches) {
     const nextMatchRow = matches.find(m => m.score_t1 === null);
     const currentWeek = nextMatchRow ? nextMatchRow.week : 30;
     
-    document.getElementById('status-text').innerText = `Status voor aanvang van Week ${currentWeek}`;
-
     renderMatchdayWidgets(matches, currentWeek);
     calculateAndRenderLeaderboards(matches, playedMatches);
 }
@@ -115,7 +111,6 @@ function calculateAndRenderLeaderboards(allMatches, playedMatches) {
         if (t1Wins) { duoStats[d1].wins++; duoStats[d2].losses++; } 
         else { duoStats[d2].wins++; duoStats[d1].losses++; }
 
-        // Special Stats
         if (m.score_t1 === 6 && m.score_t2 === 0) { t1.forEach(p => stats[p].bagelsGiven++); t2.forEach(p => stats[p].bagelsEaten++); }
         if (m.score_t2 === 6 && m.score_t1 === 0) { t2.forEach(p => stats[p].bagelsGiven++); t1.forEach(p => stats[p].bagelsEaten++); }
         if ((m.score_t1 === 6 && m.score_t2 === 5) || (m.score_t1 === 5 && m.score_t2 === 6)) {
@@ -127,7 +122,6 @@ function calculateAndRenderLeaderboards(allMatches, playedMatches) {
         name: p, ...stats[p], saldo: stats[p].gamesWon - stats[p].gamesLost
     })).sort((a, b) => b.wins - a.wins || b.saldo - a.saldo);
 
-    // Individueel Klassement
     let indHTML = '';
     ranking.forEach((r, idx) => {
         const sign = r.saldo > 0 ? '+' : '';
@@ -136,7 +130,6 @@ function calculateAndRenderLeaderboards(allMatches, playedMatches) {
     });
     document.getElementById('individual-leaderboard').innerHTML = indHTML;
 
-    // Duo Klassement
     const duoRanking = Object.keys(duoStats).map(d => {
         const total = duoStats[d].wins + duoStats[d].losses;
         return { duo: d, w: duoStats[d].wins, l: duoStats[d].losses, perc: total === 0 ? 0 : Math.round((duoStats[d].wins / total) * 100) };
@@ -149,12 +142,8 @@ function calculateAndRenderLeaderboards(allMatches, playedMatches) {
     });
     document.getElementById('duo-leaderboard').innerHTML = duoHTML;
 
-    // =========================================
-    // HALL OF FAME MET KLIKBARE TOPLIJSTEN
-    // =========================================
     const hasPlayed = ranking[0].games > 0;
     
-    // Sorteringen voor de popups
     const sortedByMuur = [...ranking].filter(r=>r.games > 0).sort((a,b) => (a.gamesLost/a.games) - (b.gamesLost/b.games));
     const sortedBySchietschijf = [...ranking].filter(r=>r.games > 0).sort((a,b) => b.gamesLost - a.gamesLost);
     const sortedByStreakWin = [...players].map(p => ({name: p, val: playerStreaks[p].maxWin})).sort((a,b) => b.val - a.val);
@@ -189,13 +178,13 @@ function calculateAndRenderLeaderboards(allMatches, playedMatches) {
             getRows: () => sortedBySchietschijf.map((r, i) => [i+1, r.name, r.gamesLost, r.games])
         },
         { 
-            id: 'streakwin', icon: '🔥', label: 'On Fire (Beste Win Streak)', 
+            id: 'streakwin', icon: '🔥', label: 'On Fire (Win Streak)', 
             check: () => sortedByStreakWin[0].val >= 2 ? `${sortedByStreakWin[0].name} (${sortedByStreakWin[0].val})` : null,
             headers: ['#', 'Speler', 'Max Streak', 'Huidige Streak'],
             getRows: () => sortedByStreakWin.map((r, i) => [i+1, r.name, r.val, playerStreaks[r.name].currentWin])
         },
         { 
-            id: 'streakloss', icon: '🧊', label: 'Pechvogel (Slechtste Streak)', 
+            id: 'streakloss', icon: '🧊', label: 'Pechvogel (Verlies Streak)', 
             check: () => sortedByStreakLoss[0].val >= 2 ? `${sortedByStreakLoss[0].name} (${sortedByStreakLoss[0].val})` : null,
             headers: ['#', 'Speler', 'Max Streak', 'Huidige Streak'],
             getRows: () => sortedByStreakLoss.map((r, i) => [i+1, r.name, r.val, playerStreaks[r.name].currentLoss])
@@ -245,7 +234,7 @@ function calculateAndRenderLeaderboards(allMatches, playedMatches) {
                 <div class="stat-icon">${a.icon}</div>
                 <div class="stat-info">
                     <span class="stat-label">${a.label}</span>
-                    <span class="stat-value" style="font-size: ${isLocked ? 'clamp(12px, 3vw, 14px)' : 'clamp(18px, 5vw, 22px)'}; color: ${isLocked ? 'var(--text-muted)' : 'white'};">${displayVal}</span>
+                    <span class="stat-value" style="font-size: ${isLocked ? '11px' : '16px'}; color: ${isLocked ? 'var(--text-muted)' : 'white'};">${displayVal}</span>
                 </div>
             </div>
         `;
@@ -253,7 +242,6 @@ function calculateAndRenderLeaderboards(allMatches, playedMatches) {
     document.getElementById('stats-grid-container').innerHTML = statsHTML;
 }
 
-// 6. HALL OF FAME MODAL LOGICA
 function openHofModal(id) {
     const data = window.hofData[id];
     if(!data) return;
@@ -266,7 +254,6 @@ function openHofModal(id) {
 
     let bodyHTML = '';
     data.rows.forEach((row, rowIdx) => {
-        // Maak top 3 goud/zilver/brons op
         let rankClass = rowIdx === 0 ? 'rank-1' : (rowIdx === 1 ? 'rank-2' : (rowIdx === 2 ? 'rank-3' : ''));
         bodyHTML += `<tr class="${rankClass}">`;
         row.forEach((cell, idx) => {
@@ -276,7 +263,6 @@ function openHofModal(id) {
         bodyHTML += `</tr>`;
     });
     document.getElementById('hof-modal-body').innerHTML = bodyHTML;
-
     document.getElementById('hof-modal').classList.add('active');
 }
 
@@ -284,14 +270,11 @@ function closeHofModal() {
     document.getElementById('hof-modal').classList.remove('active');
 }
 
-// 7. BEWERK / UPDATE SYSTEEM SCORES
 function selectScore(team, value) {
     if (team === 't1') selectedScoreT1 = value;
     if (team === 't2') selectedScoreT2 = value;
-
     const bubbles = document.querySelectorAll(`#bubbles-${team} .score-bubble`);
     bubbles.forEach(b => b.classList.remove('selected'));
-    
     bubbles[value].classList.add('selected');
 }
 
@@ -317,9 +300,7 @@ function clearScore() {
     document.querySelectorAll('.score-bubble').forEach(b => b.classList.remove('selected'));
 }
 
-function closeModal() {
-    document.getElementById('score-modal').classList.remove('active');
-}
+function closeModal() { document.getElementById('score-modal').classList.remove('active'); }
 
 async function saveScore() {
     let updateData = {};
@@ -328,17 +309,10 @@ async function saveScore() {
     } else {
         updateData = { score_t1: selectedScoreT1, score_t2: selectedScoreT2, tussenstand_t1: null, tussenstand_t2: null };
     }
-
     const { error } = await db.from('matches').update(updateData).eq('id', currentEditMatchId);
-    if (!error) {
-        closeModal(); init(); 
-    } else {
-        alert("Fout bij opslaan: " + error.message);
-    }
+    if (!error) { closeModal(); init(); } else { alert("Fout bij opslaan: " + error.message); }
 }
 
-function formatDate(dateString) {
-    return new Date(dateString).toLocaleDateString('nl-BE', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
-}
+function formatDate(dateString) { return new Date(dateString).toLocaleDateString('nl-BE', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase(); }
 
 init();
