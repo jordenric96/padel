@@ -3,38 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Padel Competitie - Dashboard</title>
+    <title>Padel Competitie</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Supabase Inladen -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        /* Extra styling voor de open/dicht knoppen (Accordeon) */
-        .collapsible-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 15px;
-            user-select: none;
-        }
-        .collapsible-header h2 { 
-            margin-bottom: 0; 
-            border-bottom: none; 
-        }
-        .toggle-icon { 
-            font-size: 16px; 
-            color: var(--royal-gold); 
-            transition: transform 0.3s;
-        }
-        .section-content {
-            display: block;
-        }
-        .section-content.collapsed {
-            display: none;
-        }
-    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -46,19 +17,11 @@
     </nav>
 
     <div class="container dashboard">
-        <header class="dash-header">
-            <h1>SEIZOEN OVERZICHT</h1>
-            <p class="subtitle" id="status-text">Status laden...</p>
-        </header>
-
+        
         <!-- Matchday Widgets -->
         <div class="matchday-container">
-            <div class="card matchday-card past-match" id="past-match-widget">
-                <!-- Data komt hier -->
-            </div>
-            <div class="card matchday-card next-match" id="next-match-widget">
-                <!-- Data komt hier -->
-            </div>
+            <div class="card matchday-card past-match" id="past-match-widget"></div>
+            <div class="card matchday-card next-match" id="next-match-widget"></div>
         </div>
 
         <!-- Hall of Fame (Standaard Dicht) -->
@@ -68,27 +31,23 @@
                 <span id="icon-hof" class="toggle-icon">▼</span>
             </div>
             <div id="hof-content" class="section-content collapsed">
-                <p style="color:var(--text-muted); font-size:12px; margin-top:-10px; margin-bottom:15px; text-transform:uppercase;">Klik op een behaalde badge voor de volledige toplijst!</p>
-                <div class="stats-grid" id="stats-grid-container" style="margin-bottom: 0;">
-                    <!-- Stats komen hier live -->
-                </div>
+                <p style="color:var(--text-muted); font-size:11px; margin-top:-8px; margin-bottom:12px; text-transform:uppercase;">Klik op een badge voor de toplijst!</p>
+                <div class="stats-grid" id="stats-grid-container" style="margin-bottom: 0;"></div>
             </div>
         </div>
 
-        <!-- Klassementen (Standaard Open) -->
+        <!-- Klassementen -->
         <div class="leaderboards-container">
-            <!-- Individueel Klassement -->
+            <!-- Individueel (Standaard Dicht) -->
             <div class="card leaderboard-card">
                 <div class="collapsible-header" onclick="toggleSection('ind-content', 'icon-ind')">
                     <h2>🏆 INDIVIDUEEL KLASSEMENT</h2>
-                    <span id="icon-ind" class="toggle-icon">▲</span>
+                    <span id="icon-ind" class="toggle-icon">▼</span>
                 </div>
-                <div id="ind-content" class="section-content">
+                <div id="ind-content" class="section-content collapsed">
                     <div class="table-responsive">
                         <table class="leaderboard-table">
-                            <thead>
-                                <tr><th>#</th><th>Speler</th><th>G</th><th>W</th><th>V</th><th>Saldo</th></tr>
-                            </thead>
+                            <thead><tr><th>#</th><th>Speler</th><th>G</th><th>W</th><th>V</th><th>Saldo</th></tr></thead>
                             <tbody id="individual-leaderboard"></tbody>
                         </table>
                     </div>
@@ -104,9 +63,7 @@
                 <div id="duo-content" class="section-content collapsed">
                     <div class="table-responsive">
                         <table class="leaderboard-table">
-                            <thead>
-                                <tr><th>#</th><th>Duo</th><th>W - V</th><th>Win %</th></tr>
-                            </thead>
+                            <thead><tr><th>#</th><th>Duo</th><th>W-V</th><th>Win %</th></tr></thead>
                             <tbody id="duo-leaderboard"></tbody>
                         </table>
                     </div>
@@ -115,63 +72,24 @@
         </div>
     </div>
 
-    <!-- Modaal venster voor het ingeven van scores -->
+    <!-- Score Modal -->
     <div class="modal-overlay" id="score-modal">
         <div class="modal-content">
             <h3 class="modal-title">Vul Score In</h3>
-            <p style="color:var(--text-muted); font-size:12px; margin-top:-15px; margin-bottom: 25px; text-align:center;">Match <span id="modal-match-id"></span></p>
-            
-            <div class="score-selection-group">
-                <label id="modal-t1-names">Team 1</label>
-                <div class="score-bubbles" id="bubbles-t1">
-                    <button class="score-bubble" onclick="selectScore('t1', 0)">0</button>
-                    <button class="score-bubble" onclick="selectScore('t1', 1)">1</button>
-                    <button class="score-bubble" onclick="selectScore('t1', 2)">2</button>
-                    <button class="score-bubble" onclick="selectScore('t1', 3)">3</button>
-                    <button class="score-bubble" onclick="selectScore('t1', 4)">4</button>
-                    <button class="score-bubble" onclick="selectScore('t1', 5)">5</button>
-                    <button class="score-bubble" onclick="selectScore('t1', 6)">6</button>
-                </div>
-            </div>
-            
+            <p style="color:var(--text-muted); font-size:11px; margin-top:-15px; margin-bottom:20px; text-align:center;">Match <span id="modal-match-id"></span></p>
+            <div class="score-selection-group"><label id="modal-t1-names"></label><div class="score-bubbles" id="bubbles-t1"><button class="score-bubble" onclick="selectScore('t1',0)">0</button><button class="score-bubble" onclick="selectScore('t1',1)">1</button><button class="score-bubble" onclick="selectScore('t1',2)">2</button><button class="score-bubble" onclick="selectScore('t1',3)">3</button><button class="score-bubble" onclick="selectScore('t1',4)">4</button><button class="score-bubble" onclick="selectScore('t1',5)">5</button><button class="score-bubble" onclick="selectScore('t1',6)">6</button></div></div>
             <div class="vs-divider">VS</div>
-            
-            <div class="score-selection-group">
-                <label id="modal-t2-names">Team 2</label>
-                <div class="score-bubbles" id="bubbles-t2">
-                    <button class="score-bubble" onclick="selectScore('t2', 0)">0</button>
-                    <button class="score-bubble" onclick="selectScore('t2', 1)">1</button>
-                    <button class="score-bubble" onclick="selectScore('t2', 2)">2</button>
-                    <button class="score-bubble" onclick="selectScore('t2', 3)">3</button>
-                    <button class="score-bubble" onclick="selectScore('t2', 4)">4</button>
-                    <button class="score-bubble" onclick="selectScore('t2', 5)">5</button>
-                    <button class="score-bubble" onclick="selectScore('t2', 6)">6</button>
-                </div>
-            </div>
-
-            <div class="modal-actions" style="margin-top: 35px;">
-                <button class="btn-close" onclick="closeModal()">Annuleren</button>
-                <button class="btn-clear" onclick="clearScore()">Wissen</button>
-                <button class="btn-save" onclick="saveScore()">Opslaan</button>
-            </div>
+            <div class="score-selection-group"><label id="modal-t2-names"></label><div class="score-bubbles" id="bubbles-t2"><button class="score-bubble" onclick="selectScore('t2',0)">0</button><button class="score-bubble" onclick="selectScore('t2',1)">1</button><button class="score-bubble" onclick="selectScore('t2',2)">2</button><button class="score-bubble" onclick="selectScore('t2',3)">3</button><button class="score-bubble" onclick="selectScore('t2',4)">4</button><button class="score-bubble" onclick="selectScore('t2',5)">5</button><button class="score-bubble" onclick="selectScore('t2',6)">6</button></div></div>
+            <div class="modal-actions"><button class="btn-close" onclick="closeModal()">Annuleren</button><button class="btn-clear" onclick="clearScore()">Wissen</button><button class="btn-save" onclick="saveScore()">Opslaan</button></div>
         </div>
     </div>
 
-    <!-- NIEUW: Modaal venster voor Hall of Fame Details -->
+    <!-- HoF Modal -->
     <div class="modal-overlay" id="hof-modal">
-        <div class="modal-content" style="max-height: 85vh; overflow-y: auto; max-width: 450px;">
+        <div class="modal-content" style="max-height: 85vh; overflow-y: auto;">
             <h3 class="modal-title" id="hof-modal-title">Top Lijst</h3>
-            <div class="table-responsive">
-                <table class="leaderboard-table">
-                    <thead>
-                        <tr id="hof-modal-head"></tr>
-                    </thead>
-                    <tbody id="hof-modal-body"></tbody>
-                </table>
-            </div>
-            <div class="modal-actions" style="margin-top: 25px;">
-                <button class="btn-close" style="flex:1;" onclick="closeHofModal()">Sluiten</button>
-            </div>
+            <div class="table-responsive"><table class="leaderboard-table"><thead><tr id="hof-modal-head"></tr></thead><tbody id="hof-modal-body"></tbody></table></div>
+            <div class="modal-actions" style="margin-top:20px;"><button class="btn-close" style="flex:1;" onclick="closeHofModal()">Sluiten</button></div>
         </div>
     </div>
 
