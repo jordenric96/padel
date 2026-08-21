@@ -13,7 +13,7 @@
         <div class="nav-brand">🎾 PADEL LEAGUE</div>
         <ul class="nav-links">
             <li><a href="index.html" class="active">Dashboard</a></li>
-            <!-- Kalender html mag je later aanpassen, voor nu werkt het dashboard! -->
+            <li><a href="matchen.html">Kalender</a></li>
         </ul>
     </nav>
 
@@ -65,7 +65,7 @@
         </div>
     </div>
 
-    <!-- Modaal venster voor het ingeven van scores & tussenstanden -->
+    <!-- Modaal venster voor het ingeven van scores -->
     <div class="modal-overlay" id="score-modal">
         <div class="modal-content">
             <h3 class="modal-title">Vul Score In</h3>
@@ -83,19 +83,13 @@
                 </div>
             </div>
             
-            <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                <input type="checkbox" id="is-tussenstand" style="width:18px; height:18px;">
-                <label for="is-tussenstand" style="color:white; font-size:14px; font-weight:600;">Dit is een TUSSENSTAND (Match loopt nog)</label>
-            </div>
-
-            <div class="modal-actions">
+            <div class="modal-actions" style="margin-top: 30px;">
                 <button class="btn-close" onclick="closeModal()">Annuleren</button>
                 <button class="btn-save" onclick="saveScore()">Opslaan</button>
             </div>
         </div>
     </div>
 
-    <!-- Koppel je nieuwe JS script -->
     <script src="app.js"></script>
 </body>
 </html>
