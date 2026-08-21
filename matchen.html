@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Padel Competitie - Kalender</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Supabase Inladen -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -18,61 +17,22 @@
     </nav>
 
     <div class="container">
-        <header class="dash-header text-center">
-            <h1>Volledige Wedstrijdkalender</h1>
-            <p class="subtitle">30 Weken - Elke Combinatie komt aan bod!</p>
-            <div class="calendar-info-pill">Elke Woensdag om 20:00</div>
-        </header>
-
-        <!-- Dit is de lege container die door kalender.js gevuld wordt -->
-        <div class="calendar-grid" id="calendar-container">
-            <p style="text-align: center; color: var(--text-muted); width: 100%;">Kalender laden...</p>
-        </div>
+        <!-- De kalender laadt hier live in -->
+        <div class="calendar-grid" id="calendar-container"></div>
     </div>
 
-    <!-- Modaal venster voor het ingeven van scores -->
+    <!-- Modaal venster voor scores in Kalender -->
     <div class="modal-overlay" id="score-modal">
         <div class="modal-content">
             <h3 class="modal-title">Vul Score In</h3>
-            <p style="color:var(--text-muted); font-size:12px; margin-top:-15px; margin-bottom: 25px; text-align:center;">Match <span id="modal-match-id"></span></p>
-            
-            <div class="score-selection-group">
-                <label id="modal-t1-names">Team 1</label>
-                <div class="score-bubbles" id="bubbles-t1">
-                    <button class="score-bubble" onclick="selectScore('t1', 0)">0</button>
-                    <button class="score-bubble" onclick="selectScore('t1', 1)">1</button>
-                    <button class="score-bubble" onclick="selectScore('t1', 2)">2</button>
-                    <button class="score-bubble" onclick="selectScore('t1', 3)">3</button>
-                    <button class="score-bubble" onclick="selectScore('t1', 4)">4</button>
-                    <button class="score-bubble" onclick="selectScore('t1', 5)">5</button>
-                    <button class="score-bubble" onclick="selectScore('t1', 6)">6</button>
-                </div>
-            </div>
-            
+            <p style="color:var(--text-muted); font-size:11px; margin-top:-15px; margin-bottom:20px; text-align:center;">Match <span id="modal-match-id"></span></p>
+            <div class="score-selection-group"><label id="modal-t1-names"></label><div class="score-bubbles" id="bubbles-t1"><button class="score-bubble" onclick="selectScore('t1',0)">0</button><button class="score-bubble" onclick="selectScore('t1',1)">1</button><button class="score-bubble" onclick="selectScore('t1',2)">2</button><button class="score-bubble" onclick="selectScore('t1',3)">3</button><button class="score-bubble" onclick="selectScore('t1',4)">4</button><button class="score-bubble" onclick="selectScore('t1',5)">5</button><button class="score-bubble" onclick="selectScore('t1',6)">6</button></div></div>
             <div class="vs-divider">VS</div>
-            
-            <div class="score-selection-group">
-                <label id="modal-t2-names">Team 2</label>
-                <div class="score-bubbles" id="bubbles-t2">
-                    <button class="score-bubble" onclick="selectScore('t2', 0)">0</button>
-                    <button class="score-bubble" onclick="selectScore('t2', 1)">1</button>
-                    <button class="score-bubble" onclick="selectScore('t2', 2)">2</button>
-                    <button class="score-bubble" onclick="selectScore('t2', 3)">3</button>
-                    <button class="score-bubble" onclick="selectScore('t2', 4)">4</button>
-                    <button class="score-bubble" onclick="selectScore('t2', 5)">5</button>
-                    <button class="score-bubble" onclick="selectScore('t2', 6)">6</button>
-                </div>
-            </div>
-
-            <div class="modal-actions" style="margin-top: 35px;">
-                <button class="btn-close" onclick="closeModal()">Annuleren</button>
-                <button class="btn-clear" onclick="clearScore()">Wissen</button>
-                <button class="btn-save" onclick="saveScore()">Opslaan</button>
-            </div>
+            <div class="score-selection-group"><label id="modal-t2-names"></label><div class="score-bubbles" id="bubbles-t2"><button class="score-bubble" onclick="selectScore('t2',0)">0</button><button class="score-bubble" onclick="selectScore('t2',1)">1</button><button class="score-bubble" onclick="selectScore('t2',2)">2</button><button class="score-bubble" onclick="selectScore('t2',3)">3</button><button class="score-bubble" onclick="selectScore('t2',4)">4</button><button class="score-bubble" onclick="selectScore('t2',5)">5</button><button class="score-bubble" onclick="selectScore('t2',6)">6</button></div></div>
+            <div class="modal-actions"><button class="btn-close" onclick="closeModal()">Annuleren</button><button class="btn-clear" onclick="clearScore()">Wissen</button><button class="btn-save" onclick="saveScore()">Opslaan</button></div>
         </div>
     </div>
 
-    <!-- Specifiek script voor de kalender -->
     <script src="kalender.js"></script>
 </body>
 </html>
