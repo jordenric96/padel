@@ -505,3 +505,22 @@ td strong { color: white; }
 .modal-actions { display: flex; gap: 10px; }
 .btn-save { flex: 1; background: var(--win-neon); color: #000; border: none; padding: 12px; font-weight: 800; border-radius: 6px; cursor: pointer; }
 .btn-close { flex: 1; background: transparent; color: white; border: 1px solid var(--text-muted); padding: 12px; border-radius: 6px; cursor: pointer; }
+
+
+/* =========================================
+   LOCKED STATS (HALL OF FAME ACHIEVEMENTS)
+   ========================================= */
+.stat-card.locked-stat {
+    filter: grayscale(100%);
+    opacity: 0.35;
+    border: 1px dashed rgba(255,255,255,0.15);
+    background: transparent;
+    box-shadow: none;
+}
+.stat-card.locked-stat:hover {
+    transform: none;
+    border-color: rgba(255,255,255,0.2);
+}
+.stat-card.locked-stat::after {
+    display: none; /* Verwijdert de gouden gloed bij gelockte stats */
+}
