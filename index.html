@@ -24,15 +24,27 @@
             <div class="card matchday-card next-match" id="next-match-widget"></div>
         </div>
 
-        <!-- Hall of Fame (Standaard Dicht) -->
+        <!-- Hall of Fame SOLO (Standaard Dicht) -->
         <div class="card leaderboard-card">
-            <div class="collapsible-header" onclick="toggleSection('hof-content', 'icon-hof')">
-                <h2>📊 HALL OF FAME</h2>
-                <span id="icon-hof" class="toggle-icon">▼</span>
+            <div class="collapsible-header" onclick="toggleSection('hof-solo-content', 'icon-hof-solo')">
+                <h2>👤 HALL OF FAME (SOLO)</h2>
+                <span id="icon-hof-solo" class="toggle-icon">▼</span>
             </div>
-            <div id="hof-content" class="section-content collapsed">
+            <div id="hof-solo-content" class="section-content collapsed">
                 <p style="color:var(--text-muted); font-size:11px; margin-top:-8px; margin-bottom:12px; text-transform:uppercase;">Klik op een badge voor de toplijst!</p>
-                <div class="stats-grid" id="stats-grid-container" style="margin-bottom: 0;"></div>
+                <div class="stats-grid" id="stats-grid-solo" style="margin-bottom: 0;"></div>
+            </div>
+        </div>
+
+        <!-- Hall of Fame DUO (Standaard Dicht) -->
+        <div class="card leaderboard-card">
+            <div class="collapsible-header" onclick="toggleSection('hof-duo-content', 'icon-hof-duo')">
+                <h2>👯 HALL OF FAME (DUO)</h2>
+                <span id="icon-hof-duo" class="toggle-icon">▼</span>
+            </div>
+            <div id="hof-duo-content" class="section-content collapsed">
+                <p style="color:var(--text-muted); font-size:11px; margin-top:-8px; margin-bottom:12px; text-transform:uppercase;">Klik op een badge voor de toplijst!</p>
+                <div class="stats-grid" id="stats-grid-duo" style="margin-bottom: 0;"></div>
             </div>
         </div>
 
