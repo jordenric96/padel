@@ -33,8 +33,14 @@ function buildDashboard(matches) {
     const nextMatchRow = matches.find(m => m.score_t1 === null);
     const currentWeek = nextMatchRow ? nextMatchRow.week : 30;
     
-    const statusEl = document.getElementById('status-text');
-    if(statusEl) statusEl.innerText = `Status voor aanvang van Week ${currentWeek}`;
+    // Voortgangsbalk updaten
+    const perc = Math.round((playedMatches.length / 60) * 100);
+    const progFill = document.getElementById('progress-fill');
+    const progText = document.getElementById('progress-text');
+    if (progFill && progText) {
+        progFill.style.width = perc + '%';
+        progText.innerText = `${perc}% (${playedMatches.length}/60)`;
+    }
 
     renderMatchdayWidgets(matches, currentWeek);
     calculateAndRenderLeaderboards(matches, playedMatches);
@@ -78,7 +84,7 @@ function calculateAndRenderLeaderboards(allMatches, playedMatches) {
     let stats = {};
     let playerStreaks = {};
     
-    // Initialiseer gigantische lege stats
+    // Initialiseer stats
     players.forEach(p => {
         stats[p] = { games: 0, wins: 0, losses: 0, gamesWon: 0, gamesLost: 0, totalGamesPlayed: 0, bagelsGiven: 0, bagelsEaten: 0, thrillsWon: 0, thrillsLost: 0 };
         playerStreaks[p] = { currentWin: 0, maxWin: 0, currentLoss: 0, maxLoss: 0 };
@@ -173,7 +179,7 @@ function calculateAndRenderLeaderboards(allMatches, playedMatches) {
     if(duoLbord) duoLbord.innerHTML = duoHTML;
 
     // ==========================================
-    // HALL OF FAME: EXTREME VERSIE
+    // HALL OF FAME
     // ==========================================
     const hasPlayed = ranking[0].games > 0;
     
