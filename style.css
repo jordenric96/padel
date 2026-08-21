@@ -261,3 +261,47 @@ td strong { color: white; }
 .toggle-icon { font-size: 14px; color: var(--royal-gold); }
 .section-content { display: block; }
 .section-content.collapsed { display: none; }
+
+/* =========================================
+   PROGRESS BAR (SEIZOENSVOORTGANG)
+   ========================================= */
+.progress-container {
+    background: var(--card-bg-dark);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.03);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.progress-title {
+    font-family: 'Oswald', sans-serif; 
+    font-size: 14px; 
+    color: var(--text-muted); 
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.progress-text {
+    font-family: 'Oswald', sans-serif; 
+    font-size: 15px; 
+    color: white;
+}
+.progress-bar-bg {
+    background: rgba(255,255,255,0.05);
+    height: 14px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.progress-bar-fill {
+    background: linear-gradient(90deg, var(--cobalt-blue), var(--win-neon));
+    height: 100%;
+    width: 0%; /* Wordt via JS ingevuld */
+    border-radius: 8px;
+    transition: width 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
